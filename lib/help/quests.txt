@@ -1,0 +1,8 @@
+In Quickband, there are just two quests:
+
+Kill Lurtz at 550 feet.
+Kill Saruman at 600 feet.
+
+A player must kill Lurtz at 550 feet in order to be able to meet Saruman. 
+When Lurtz is killed, a staircase downwards will appear. 
+Defeating Saruman wins the game. 

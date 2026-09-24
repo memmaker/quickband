@@ -1,0 +1,133 @@
+** v2.00
+
+Rebranded & gave contact details
+Changed version numbers
+Changed fixed quests
+Dealt with all incidences of Sauron, Morgoth, One Ring, Grond and Iron Crown in code
+Changed info files (many items/egos/arts available earlier or more common, others removed, etc)
+Created new rings of Robustness and Alertness
+Set tiles for the two quest monsters
+Improved spell success rates for casters, increased mana for mage-casters
+Randarts never get extra blows
+Reduced max damage from powerful monster distance attacks
+Great and good objects are more likely, cursed objects less likely
+Edited store inventories
+Less low-end hounds, and hounds are worth less XP
+Trapdoors are more common than other traps; level teleportation is more likely to be down than up
+Rings of speed and rings/amulets of +stat cannot be as good as before
+Some store services are no longer available
+Guild is closed
+Rooms are more likely to be lit
+Pseudo-id and level feelings work much faster
+Nexus stat-swapping is less severe
+Slow/sleep/confuse effects are more likely to work on monsters
+No player ghosts, quests, or extra artifacts
+Less XP needed to gain levels... up to a point
+Various stat effect tables are 'steeper'
+High Dex gives a speed bonus
+New blows formula
+Removed quest ticker
+Some wands and staffs have less charges
+Some unpleasant monsters are more common or shallower
+Dragons have more hp and breathe more often
+There are more monsters per level, and wandering monsters appear faster
+The effects of Con bonuses take a while to kick in
+Some funky levels are commoner
+Enchantments are unreliable if you have low Cha
+Warning messages for the effects of low Int, Wis or Cha
+
+** v2.01
+
+Weakened some artifacts, added some minor arts
+Beefed up Lurtz and Saruman a bit
+Minor bugfixes
+No more +shots launchers
+Removed four early melee uniques
+Added more monsters
+Con over 18/70 is less useful than it was
+Spell stat over 18/50 is less useful than it was
+Zero-fail caster classes get faster mana regeneration and more spell damage
+Paladins no longer get OOD or Shock Bolt
+CL 36 is now a hard cap
+If players hang round at high level with many artifacts, they get 'prods' to hurry up
+
+** v2.02
+
+Removed some deep artifacts
+Changed Saruman and Lurtz's summons
+Beefed up Lurtz a bit more
+Reduced possible speed boost from boots
+Barbarian and berserker classes added 
+Slightly harder to get 4 or 5 attacks
+Measures against stair scumming
+Word of Recall is a temple service
+
+** v2.03
+
+Added Sage class 
+Added Maiar race, revamped Dunedain, High-Elf and Half-Elf
+Tweaked racial stat adjustments
+Improved default stat allocation a little
+Fighting classes get less HP relative to caster classes
+Paladin now gets more XP for evil monsters, less for non-evil
+Paladin loses Portal spell
+Bugfix to SP calculation
+Bugfix to level feelings
+Bugfix to sleep effects
+Set some display options TRUE by default (auto_display_lists, hp_changes_color, mark_squelch_items)
+Devices fail more often
+Picks are better than shovels
+Several monsters are more alert
+
+** v2.0.4
+
+New monster spells: summon besiegers, create trap (out of your sight)
+New armor type: thorns
+New weapon brands: vampiric draining and mana burn
+Characters no longer gain XP for casting spells
+Some artifact rarities have changed; all artifacts are more common below DL 8; all artifacts are less common if you are "not challenged" by your depth
+When an Elf or High-Elf pseudo-IDs a bow or arrows, they fully ID it
+When a Hobbit pseudo-IDs a sling or shots, they fully ID it
+When an Dwarf pseudo-IDs a helmet or heavy armor, they fully ID it
+When a Gnome zaps a wand or staff, they fully ID it
+Half-troll casters can wear heavier equipment without losing SP
+
+(and from the 2.0.3 bugfix release:
+  Teleport Other is a bolt not a beam
+  Branded ammo are more likely to be destroyed on fire
+  When a monster melees you, nearby sleeping monsters who have LOS to you are likely to wake up
+  If you are very poisoned, you lose multiple HP per turn 
+  Smart monsters with full mana will usually summon if they can
+  You can start the game with 'n' or 'o' in Windows
+)
+
+** v2.0.5
+
+New race: Sprite
+Chaos attacks only have a 1 in 3 chance of making you hallucinate
+If your stats are badly drained, you may resist further draining
+New monsters (some dangerous), various small monster changes
+Strong unresisted acid attacks can reduce your Cha if you do not have the sustain - ditto Nether your Str, and Confusion your Int or Wis.
+Useful new objects, including the notorious wand of wall building
+
+(and from the 2.0.4 bugfix release:
+  Corrected documentation - gnomes only auto-ID wands, not staffs
+  Base delay factor now defaults to 3
+  Many weak monsters can no longer bash doors
+  You can browse spells that you can't cast yet
+  Sleep attacks are now much more effective (except against very wakeful monsters)
+  High-Con characters have more hp, but low-Con have less
+)
+
+** Bugfix release
+
+Ban Sidhe is not found
+Mage gets Detect Objects later, and never CLW
+Druid gets Fire and Frost beams later
+
+** v2.0.6
+
+Now supports UT32 tileset - many thanks to Buzzkill!
+
+
+

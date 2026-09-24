@@ -1,0 +1,358 @@
+
+====== Races ======
+
+     There are eleven different races that you may choose among, representing
+most of the speaking peoples found in Tolkien's books, plus Gnomes and Kobolds.
+Races differ in vital statistics, and tend to be better at some abilities than
+at others.
+     Good races for new players are Dunedain and High-Elves (powerful but slow
+at gaining levels), and Elves and Dwarves (good abilities, not too slow at
+gaining levels).
+
+***** <Human>
+Human:
+     A flexible and adaptive race, humans are found all over Middle-Earth, from
+desert Harad to icy Horodwaith.  They have no special adjustments to stats, and
+no special strengths or weaknesses.  This, combined with their solid hitpoints,
+makes them flexible but not powerful adventurers.  Humans may choose any class.
+
+***** <Half-Elf>
+Half-Elf:
+     A Half-Elf is a descendant of both kindreds; Elves and Men. They are rare
+and very special individuals, and their steps are guided by destiny.
+Half-elves have all-round good stats; their skills are better than Men (but not
+as good as Elves). Their dexterity is sustained and they are native to forest.
+(A half-elf will find more artifacts, vaults, excellent items and special levels,
+but will also find dangerous out-of-depth monsters, which will probably kill
+them eventually. You have been warned.)
+
+***** <Elf>
+Elf:
+     Known as the Elder Race, and as the First-Born, Elves are famed for their
+knowledge and craftsmanship.  They are somewhat weaker and less robust than 
+humans, but have superior wisdom and intelligence and strong magical abilities.
+They are fond of bows, somewhat weak in melee, and have some infravision.  They
+sustain dexterity and resist light inherently. They are native to forest.
+(Once an Elf pseudo-IDs a bow or arrows, they fully identify it.)
+
+***** <Hobbit>
+Hobbit:
+     Hobbits are shy, retiring folk with enough good sense to share.  They live
+in homes with circular entranceways built partially underground, and are the
+smallest of all the races.  Although they are weak, have perilously few
+hitpoints, and are very poor at melee, all of their other abilities are
+extraordinary.  Hobbits are highly intelligent, dexterous, and hardy, have
+innate infravision, and resist attacks on their life force.  
+(Once a Hobbit pseudo-IDs a sling or shots, they fully identify it.)
+
+***** <Gnome>
+Gnome:
+     Gnomes are the pudgy pranksters of the dungeon; if they can kill something
+in a humorous way, so much the better.  They may be small and ugly, but can
+outbargain and outwit just about anyone.  They are among the frailer races, and
+not powerful in combat, but have solid basic abilities, are highly intelligent
+and dexterous, have innate infravision, and -- most importantly -- are immune to
+paralyzation.
+(Once an Gnome zaps a wand, they fully identify it.)
+
+***** <Dwarf>
+Dwarf:
+     Dwarves are the headstrong miners and fighters of legend.  They are strong,
+wise, tough, and have pretty good basic skills; although not very good at
+casting spells, they make excellent priests.  Dwarves are quite good at melee
+combat, have innate infravision, and -- a major advantage -- can never be
+blinded.  They do have one big drawback, though:  Dwarves are loudmouthed and
+proud, singing in loud voices, arguing with themselves for no good reason,
+screaming out challenges at imagined foes.  In other words, dwarves have a
+miserable stealth.
+(Once an Dwarf pseudo-IDs a helmet or heavy armor, they fully identify it.)
+
+***** <Half-Orc>
+Half-Orc:
+     The bastard offspring of humans and orcs, half-orcs are ugly, strong, and
+have very bad attitudes.  Their magic is a little suspect, as are most of their
+skills, but they know how to fight and can take as much damage as they dish out.
+Most other races dislike them and so they have a hard time in stores.  Half-orcs
+have innate infravision and, like orcs themselves, resist darkness and its
+effects.
+
+***** <Half-Troll>
+Half-Troll:
+     Half-trolls are built like blocks of granite; no other race can match their
+strength or recover hitpoints as quickly.  Their hand-to-hand combat prowess is
+fearsome and they are amazingly tough.  Unfortunately, they do poorly at almost
+everything else, are very noisy, need to eat a lot, and have a hard time in
+stores.  Half-trolls will be bad at anything that requires heavy thinking.  They
+have innate infravision and always have their strength sustained.  
+(Half-Troll spell casters can wear heavier equipment than other races without 
+losing SP.)
+
+***** <Dunadan>
+Dunadan:
+	Dunedain are the descendants of the people of Numenor, who have
+long lived among the shorter lived peoples of Middle Earth.
+At first they may appear ordinary, and they are disliked by many
+because of their nomadic existence. However, they have the blood
+of Elros Half-Elven in them, and as the game goes on they will
+slowly awaken to their destiny as one of the Kings of Men.
+(A Dunedain has mediocre stats at CL 1, cannot enter shops, and 
+needs many XP to gain levels, but at CL 10 they can shop and 
+their stats begin to increase - a randomly chosen stat increases
+by 2 points at levels 12, 15, 18, 21, 24, 27, 30, 33 and 35.)
+
+***** <High-Elf>
+High-Elf:
+The Noldor travelled from Middle-Earth to Valinor to dwell among the 
+Valar in bliss. They returned to Middle-Earth to seek the Silmarils, 
+but in doing so they had to slay their own kin, the Teleri. Though 
+they are mighty and beautiful, the curse of Mandos is on them, and 
+nothing they do will come to a good end. They are doomed by their 
+own greed and pride. 
+High-elves can see invisible (the Unseen Realm), are resistant to 
+light and native to forest. Like ordinary Elves, they have special
+knowledge of bows and arrows.
+(As one of the Noldor, you will find the early game easy. However,
+once you reach CL 27, you will begin to be affected by the Doom of
+Mandos. This can have several nasty effects at random intervals. 
+Try to finish the game quickly or you will probably die an unfair
+death. You have been warned!) 
+
+***** <Kobold>
+Kobold:
+     Kobolds are a race of small dog-headed humanoids that dwell underground.
+They are dexterous and tough, but ugly, and have relatively few hitpoints.
+Kobolds can see in the dark better than almost any other race, are very
+stealthy, and -- their most important advantage -- are intrinsically resistant
+to poisons of all kinds.
+
+***** <Maia>
+Maia:
+     The Maiar were created by Iluvatar in the beginning of time. Among their
+number are Gandalf, Saruman, Sauron, Melian, and the Balrog of Moria. 
+They are powerful and skilled at all arts. Sometimes they are dispatched by the 
+Valar to do some important mission in Middle-Earth, but only a limited time 
+is given to them. In your case, you have only a little time to complete your
+mission. You must proceed directly to the bottom of the dungeon to bring 
+Saruman to justice.
+(As one of the Maiar, you have great stats and skills, and you can see invisible,
+but you must play ironman - you can never go up, only down.)
+
+**** <Sprite>
+Sprites are a race of winged folk who dwell in forests, meadows and secluded 
+places. They can fly and quickly dart about from place to place. Although they 
+are weak, and sometimes scatterbrained, they can be cunning. Sprites eat almost 
+nothing - some say they live on air.
+(Sprites' flight ability allows them to ignore traps and adverse terrain.)
+
+====== Classes ======
+
+     Your choice of class makes all the difference to how the game plays.  They
+vary greatly in toughness, combat and magic power, and ability to notice,
+detect, and avoid things.  Some suggested classes for new players are warriors
+and paladins.
+
+***** <Warrior>
+Warrior:
+     A hack-and-slash character who solves most of his problems by cutting them
+to pieces.  He is unchallengeable with melee weapons, and is also good with all
+missile launchers.  He becomes resistant to fear at level 30.  
+Although a warrior gets a lot of hitpoints, he is 
+poor at the dungeon survival skills, vulnerable to magic, and suffers greatly 
+from his ignorance of spells and many magical devices.  He gets fast, detailed 
+feelings on weapons and armour (pseudo-ID).
+     Note that a Quickband warrior does not get an extra attack as in NPP. On the
+other hand, with his good Strength and Dexterity, he will probably get plenty
+of attacks to begin with.
+
+***** <Mage>
+Mage:
+     A Mage must live by his wits.  He cannot hope to simply hack his way
+through the dungeon, and so must therefore use his magic to defeat, deceive,
+baffle, and escape.  A mage excels in the use of magical devices, and finds them
+very handy when his mana runs low.  He has excellent magical defences, but
+dangerously poor physical ones.  He has almost no chance of sensing wargear.
+There is no rule that says a mage cannot become a good fighter, but spells are
+his true realm.  Intelligence is his spell stat.
+
+***** <Priest>
+Priest:
+     Covenanted with a mighty and generous god.  He explores the dungeon only to
+cleanse the evil that lurks within, and if treasure just happens to fall into
+his pack, well, so much more to the glory of the Church!  A Priest is familiar
+with magical devices, preferring to call them "Instruments of God", but is not
+as good as a mage in their use.  A priest can be a decent fighter, especially
+when sanctified, but only with blunt or blessed weapons.  Unblessed edged
+weapons (swords and polearms) violate the Church's strictures about shedding
+blood, and wielding one will hurt his ability to pray successfully.  A Priest
+has fast but weak pseudo-ID.  Wisdom is his prayer stat.
+
+***** <Rogue>
+Rogue:
+     A Rogue is a character that prefers to live by his cunning, but is capable
+of fighting his way out of a tight spot.  He is a master of traps and locks, no
+device being impossible for him to overcome, and his stealth often lets him
+choose his fights.  A rogue's perception is higher than that of any other class,
+and ofttimes he will notice a trap or secret door without having to search.
+Rogues can also learn a few spells, but not the powerful offensive magic mages
+wield.  A rogue has moderately fast, detailed pseudo-ID.  Intelligence is his
+spell stat.  Using the 'P' command, he can attempt to steal from monsters, and
+set traps for unsuspecting monsters.  As the rogue gains levels, he can create
+an increasing variety of traps by using the + command on an existing monster
+trap.  He is exceptionally gifted with a sling, and gets an extra shot with
+a sling when he reaches level 26.
+
+***** <Ranger>
+Ranger:
+     The greatest of bowsmen, capable of eventually firing a bow twice as 
+fast than most.  He can also hold his own in melee, and has some useful
+spells to aid him in need; rangers have many talents.  His dungeon survival
+skills are better than average.  A ranger has average-speed, weak pseudo-ID.
+Intelligence is his spell stat.  He gets an extra shot with a bow at level
+26.
+
+***** <Paladin>
+Paladin:
+     A champion of the Faith.  He is close behind the warrior in melee, can
+use all weapons comfortably, and has some useful prayers to enhance his powers.
+Most of his other skills are average:  while his saving throw benefits from his
+divine alliance, and his missile skill from his prayers, he is poor at magical
+devices, stealth, and searching.  A paladin has slowish but detailed pseudo-ID.
+Wisdom is his prayer stat.
+(The Paladin gets 15% extra XP for killing evil monsters, but only 50% XP for
+killing non-evil monsters.)
+
+***** <Brigand>
+Brigand:
+      A Brigand is a thief, who simply wants to plunder the pits of Angband
+to steal its greatest treasures.  He is close behind the warrior in melee.  
+He is a master of traps and locks, no device being impossible for him to 
+overcome, and has the highest stealth of all classes, which can frequently
+let him choose his fights.  His dungeon survival skills are better than 
+average, and he has a fast, detailed pseudo-ID.  The 'P' command allows 
+a brigand can attempt to steal from monsters, and the 'O' command can 
+set traps for unsuspecting monsters.  As the brigand gains levels, he 
+can create an increasing variety of traps by using the 'O' command on an 
+existing monster trap.  He is exceptionally gifted with a sling, and 
+gets an extra shot with a sling when he reaches level 26.
+
+***** <Druid>
+Druid:
+      A Druid is a master of all things natural.  He cannot hope to simply
+hack his way through the dungeon, and so must therefore call upon the power
+of nature for attack and defense.  A druid is not really complete without 
+an assortment of magical devices to use in addition to his spells.  He can 
+master the higher level magical devices easily, and has a very good saving 
+throw to resist effects of spells cast at him.  Intelligence and Wisdom 
+are his primary stats.  He is the weakest fighter of all the classes, and 
+spells are his true realm.
+
+***** <Barbarian>
+Barbarian:
+      A Barbarian is a wild man of the mountains. He is crafty, and a good 
+warrior. When he fights in melee, he becomes enraged. The higher his rage, 
+the more his speed increases. He can also spend rage for various useful 
+abilities. The Barbarian's main disadvantage is that he is illiterate
+and cannot use any scrolls. He also does not know how to zap a wand.
+However, he can get by using town services and certain special abilities.
+He is native to forest.
+
+***** <Berserker>
+Berserker:
+      A Berserker is a feared warrior who becomes frenzied in battle. He 
+gains rage much faster than the Barbarian, and is stronger in melee combat. 
+He is immune to fear. On the other hand, he is illiterate like the Barbarian, 
+and he does not know how to use wands _or_ staffs. He also aggravates 
+monsters, who will come from a long way off to fight him.
+He is native to ice.
+
+***** <Sage>
+Sage:
+      A Sage is the most learned of the classes. He can cast mage, priest 
+or druid spells. His intelligence decides how many spells he has and what 
+his failure rates are, but his wisdom decides how many SP he has.
+His failure rates cannot drop below 5%; also, he cannot use edged weapons 
+(like a priest) or gauntlets (like a mage). 
+He is even weaker in combat than a druid.
+
+
+====== Modifier Tables ======
+
+Vital statistics:
+
+                  STR   INT   WIS   DEX   CON   CHR  HD (base)  XP/level  Infra
+     Human         0     0     0     0     0     0      10        +0%     None
+     Half-Elf     +2    +2    +2    +2    +2    +2      10       +80%    20 feet
+     Elf          -1    +2    +1    +1    -2    +1       9       +20%    30 feet
+     Hobbit       -2    +1    +1    +3    +2    +1       7       +10%    40 feet
+     Gnome        -1    +2     0    +2    +1    -2       8       +25%    40 feet
+     Dwarf        +2    -3    +2    -2    +2    -3      11       +20%    50 feet
+     Half-Orc     +2    -1     0     0    +1    -4      10       +10%    30 feet
+     Half-Troll   +4    -4    -2    -4    +3    -6      12       +20%    30 feet
+     Dunadan (*)   0     0     0     0     0     0      10       +50%     None
+     High-Elf     +1    +3    +1    +3    +1    +3       9       +60%    40 feet
+     Kobold       -1    -1     0    +2    +2    -2       8       +15%    50 feet
+     Maia         +3    +3    +3    +3    +3    +3      11      +100%    30 feet
+     Sprite       -2    +1    -2    +5    -2     0       7       +30%     None
+
+(*) The Dunadan gains random stat boosts at higher levels.
+
+                  STR   INT   WIS   DEX   CON   CHR  HD (bonus) XP/level
+     Warrior      +5    -2    -2    +2    +2    -1       6        +0%
+     Mage         -5    +3     0    +1    -2    +1       0       +30%
+     Priest       -1    -3    +3    -1     0    +2       2       +20%
+     Rogue        +2    +1    -2    +3    +1    -1       4       +25%
+     Ranger       +2    +2     0    +1    +1    +1       3       +30%
+     Paladin      +3    -3    +1     0    +2    +2       4   (+) +35%
+     Brigand      +3    -2    -2    +3    +2    -3       5       +15%
+     Druid        -2    +3    +3    -2    -1    +1       1       +30%
+     Barbarian    +3    -3    -1    +2    +2    -3       5       +15%
+     Berserker    +5    -5    -5    +1    +3    -5       7       +25%
+     Sage         -5    +3    +3    -2    -2     0       1       +40%
+
+(+) The Paladin gets extra XP for killing evil monsters, but less XP for killing
+non-evil monsters.
+
+     To get the total hit dice and experience modifier, add the race and class
+numbers together.  For example:  A Dwarven Priest has a hit die of 11 + 2 = 13,
+so will get 1d13 extra hit points per level before constitution bonuses.  He has
+an experience modifier of 20% + 20% = 40%, so will take 40% more experience to
+advance than a human warrior.
+
+
+Abilities:
+
+                disarm  device   save   stealth  search  percep  melee  missile
+     Human         5       5       5       0       5       5       5       5
+     Half-Elf      6       8       8      +2       7       6       6       8
+     Elf           7       7       7      +1       8       7       3       8
+     Hobbit       10      10      10      +4      10      10       1       9
+     Gnome         8       9       9      +3       7       8       2       8
+     Dwarf         6       8       8      -1       8       5       9       5
+     Half-Orc      4       4       3      -1       5       4       8       4
+     Half-Troll    3       2       1      -2       4       3      10       3
+     Dunadan       7       7       6      +2       6       8       7       7
+     High-Elf      7      10      10      +3       6       9       7      10
+     Kobold        8       7       5      +4       7      10       3       7
+     Maia          8      10      10      +3       7      10       9       9
+     Sprite        5       9       6      +3       6       6       3       7
+
+     Abilities are ranked on a comparative scale ranging from 1 to 10, except
+for stealth, which is an exact value.
+
+                disarm  device   save   stealth  search  percep  melee  missile
+     Warrior     4 - 7   3 - 2   3 - 5    +1       5       1     8 -10+  7 - 9
+     Mage        5 - 5   9 - 9   8 - 7    +2       6       7     2 - 2   1 - 2
+     Priest      4 - 4   7 - 7   9 -10    +2       6       3     4 - 3   4 - 3
+     Rogue       9 - 9   7 - 7   7 - 7    +5       8       9     6 - 9   8 - 7
+     Ranger      5 - 6   7 - 7   7 - 7    +3       7       5     5 - 6   9 -10+
+     Paladin     3 - 3   5 - 5   6 - 7    +1       4       1     8 - 9   5 - 6
+     Brigand     9 - 9   5 - 5   7 - 6    +7       7       3     8 - 9   8 - 6
+     Druid       4 - 4   7 - 8   8 - 7    +2       6       5     1 - 1   1 - 1
+     Barbarian   3 - 3   2 - 2   3 - 5    +3       5       3     6 - 9   6 - 8
+     Berserker   2 - 2   1 - 1   2 - 2    +0       5       3     9 -10+  1 - 3
+     Druid       4 - 4   7 - 8   8 - 7    +2       6       5     0 - 0   1 - 1
+
+
+     Value for classes are starting ability - final ability.  Note that prayers
+and spells can improve many of these skills dramatically.
+
