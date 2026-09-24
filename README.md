@@ -10,7 +10,7 @@ This fork adds a few features, fixes and a browser port on top of Quickband 2.0.
 ## What's new
 
 - **Command menu on Enter:** every command, grouped, with its key
-- **Inventory with a cursor and item menus** (POC): letters still act directly, Enter opens a menu of
+- **Inventory with a cursor and item menus:** letters still act directly, Enter opens a menu of
   everything you can do with the highlighted item, every item prompt uses the same list, and it all
   works from the numeric keypad alone
 - **Auto-explore** (`H`), plus `<` / `>` to walk to the nearest known stairs
