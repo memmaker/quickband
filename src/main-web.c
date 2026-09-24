@@ -61,6 +61,14 @@ EM_JS(void, js_bell, (void), {
 	Module.qb.bell();
 });
 
+EM_JS(void, js_sound, (const char *name), {
+	Module.qb.sound(UTF8ToString(name));
+});
+
+EM_JS(void, js_depth, (int depth), {
+	Module.qb.depth(depth);
+});
+
 EM_JS(void, js_color, (int i, int r, int g, int b), {
 	Module.qb.color(i, r, g, b);
 });
@@ -268,6 +276,12 @@ static void web_react(void)
 		         angband_color_table[i][3]);
 }
 
+/* Sound events go to the page, which plays lib/xtra/sound/sound.cfg */
+static void web_sound(int v)
+{
+	if ((v > 0) && (v < MSG_MAX)) js_sound(angband_sound_name[v]);
+}
+
 static int web_idx(void)
 {
 	return (int)(Term - web_term);
@@ -278,7 +292,18 @@ static errr Term_xtra_web(int n, int v)
 	switch (n)
 	{
 		case TERM_XTRA_NOISE: js_bell(); return (0);
-		case TERM_XTRA_FRESH: js_fresh(web_idx()); return (0);
+		case TERM_XTRA_FRESH:
+			js_fresh(web_idx());
+
+			/*
+			 * The page's Sound button is the only switch (off by default):
+			 * keep the savefile option on so events reach it
+			 */
+			if (character_generated) use_sound = TRUE;
+
+			/* The page plays town music at depth 0 */
+			js_depth(character_dungeon ? p_ptr->depth : -1);
+			return (0);
 		case TERM_XTRA_BORED: return (web_check_events(0));
 		case TERM_XTRA_EVENT: return (web_check_events(v));
 		case TERM_XTRA_FLUSH:
@@ -365,6 +390,8 @@ errr init_web(int argc, char **argv)
 	 */
 	options[OPT_auto_more].normal = TRUE;
 	options[OPT_center_player].normal = TRUE;
+
+	sound_hook = web_sound;
 
 	web_react();
 

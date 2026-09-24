@@ -404,7 +404,55 @@
 		return String.fromCharCode(b);
 	}
 
+	/* Sound effects (lib/xtra/sound/sound.cfg) and town music, both off by default */
+	var audio = { sound: false, music: false, cfg: {}, cache: {}, depth: -1,
+		song: new Audio('music/new_town.ogg') };
+	audio.song.loop = true;
+	try {
+		audio.sound = localStorage.getItem('qb-sound') === '1';
+		audio.music = localStorage.getItem('qb-music') === '1';
+	} catch (e) { }
+	fetch('sound/sound.cfg').then(function (r) { return r.text(); }).then(function (t) {
+		t.split('\n').forEach(function (l) {
+			var m = /^(\w+)\s*=\s*(.+)$/.exec(l.trim());
+			if (m) audio.cfg[m[1]] = m[2].split(/\s+/);
+		});
+	});
+
+	function updateMusic() {
+		if (audio.music && audio.depth === 0) audio.song.play().catch(function () { });
+		else audio.song.pause();
+	}
+
+	function toggleAudio(kind) {
+		audio[kind] = !audio[kind];
+		try { localStorage.setItem('qb-' + kind, audio[kind] ? '1' : '0'); } catch (e) { }
+		renderAudio();
+		updateMusic();
+	}
+
+	function renderAudio() {
+		$('btn-sound').textContent = 'Sound: ' + (audio.sound ? 'on' : 'off');
+		$('btn-music').textContent = 'Music: ' + (audio.music ? 'on' : 'off');
+	}
+
 	var qb = {
+		sound: function (name) {
+			var files = audio.sound && audio.cfg[name];
+			if (!files) return;
+			var f = files[Math.floor(Math.random() * files.length)];
+			if (!audio.cache[f]) audio.cache[f] = new Audio('sound/' + f);
+			var a = audio.cache[f].cloneNode();
+			a.volume = 0.6;
+			a.play().catch(function () { });
+		},
+
+		depth: function (d) {
+			if (d === audio.depth) return;
+			audio.depth = d;
+			updateMusic();
+		},
+
 		mouseX: 0, mouseY: 0, mouseB: 0,
 
 		termCols: function (t) { return terms[t].cols; },
@@ -791,6 +839,9 @@
 		$('btn-zoom-in').onclick = function () { zoomMain(1); };
 		$('btn-zoom-out').onclick = function () { zoomMain(-1); };
 		$('btn-layout').onclick = resetLayout;
+		$('btn-sound').onclick = function () { toggleAudio('sound'); };
+		$('btn-music').onclick = function () { toggleAudio('music'); };
+		renderAudio();
 
 		/* Buttons never take the keyboard focus away from the game */
 		document.querySelectorAll('button').forEach(function (b) {

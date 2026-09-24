@@ -27,6 +27,9 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	--preload-file web/stage/lib@/lib
 
 cp web/index.html web/quickband.js "$OUT/"
+# Sound effects and town music are fetched by the page, not preloaded
+cp -R lib/xtra/sound "$OUT/sound"
+mkdir -p "$OUT/music" && cp web/music/new_town.ogg "$OUT/music/"
 # Game guide for the Help button, from ~/Desktop/Games/Roguelikes/Docs
 python3 web/make-help.py > "$OUT/help.html"
 rm -rf web/stage
