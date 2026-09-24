@@ -3418,7 +3418,7 @@ void request_command(void)
 		while (n--)
 		{
 			if (!get_check("Are you sure? "))
-				p_ptr->command_cmd = '\n';
+				p_ptr->command_cmd = ESCAPE;
 		}
 	}
 

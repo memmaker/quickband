@@ -65,6 +65,12 @@ to the town.  This command takes a full turn.  Some staircases give you the opti
 of going up either 50 feet (one level) or 100 feet (two levels).
 
 
+Command menu (Enter, or ^H in the original keyset) :
+     Shows every command, grouped by kind, with its key.  Pick a group, then
+a command, with the arrow keys and Enter (or the mouse); Escape goes back.
+Nothing to remember: every command in the game can be run from here.
+
+
 Auto-explore (H) :
      Walk towards the nearest unexplored part of the level, one step per turn,
 opening doors on the way.  It stops when a monster is in view or anything

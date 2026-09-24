@@ -86,7 +86,14 @@ static command_type cmd_action[] =
 	{ "Jam a door shut",            'j', CMD_NULL, textui_cmd_spike },
 	{ "Bash a door open",           'B', CMD_NULL, textui_cmd_bash },
 	{ "Make a monster trap",		'O', CMD_NULL, textui_cmd_make_trap},
-	{ "Steal from a monster",		'P', CMD_NULL, textui_cmd_steal}
+	{ "Steal from a monster",		'P', CMD_NULL, textui_cmd_steal},
+	{ "Walk",                     ';', CMD_NULL, textui_cmd_walk },
+	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
+	{ "Stand still",              ',', CMD_HOLD, NULL },
+	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
+	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
+	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
+	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL }
 };
 
 
@@ -135,7 +142,10 @@ static command_type cmd_info[] =
 	{ "Check quest",   	        KTRL('Q'), CMD_NULL, do_cmd_quest },
 	{ "Repeat level feeling",   KTRL('F'), CMD_NULL, do_cmd_feeling },
 	{ "Show previous message",  KTRL('O'), CMD_NULL, do_cmd_message_one },
-	{ "Show previous messages", KTRL('P'), CMD_NULL, do_cmd_messages }
+	{ "Show previous messages", KTRL('P'), CMD_NULL, do_cmd_messages },
+	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
+	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip },
+	{ "Version info",             'V', CMD_NULL, do_cmd_version }
 };
 
 /* Utility/assorted commands */
@@ -150,30 +160,20 @@ static command_type cmd_util[] =
 	{ "Redraw the screen",    KTRL('R'), CMD_NULL, do_cmd_redraw },
 
 	{ "Load \"screen dump\"",       '(', CMD_NULL, do_cmd_load_screen },
-	{ "Save \"screen dump\"",       ')', CMD_NULL, do_cmd_save_screen }
+	{ "Save \"screen dump\"",       ')', CMD_NULL, do_cmd_save_screen },
+	{ "Take notes",               ':', CMD_NULL, do_cmd_dictate_note}
 };
 
 
 /* Commands that shouldn't be shown to the user */
 static command_type cmd_hidden[] =
 {
-	{ "Take notes",               ':', CMD_NULL, do_cmd_dictate_note},
-	{ "Version info",             'V', CMD_NULL, do_cmd_version },
 	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
 	{ "Mouse click",      DEFINED_XFF, CMD_NULL, do_cmd_mouseclick },
-	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
-	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
-	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
-	{ "Walk",                     ';', CMD_NULL, textui_cmd_walk },
-	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
-	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
-	{ "Stand still",              ',', CMD_HOLD, NULL },
 	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
 	{ "Display menu of actions", KTRL('H'), CMD_NULL, do_cmd_menu },
-	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
-	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL },
 
 #ifdef ALLOW_DEBUG
 	{ "Debug mode commands", KTRL('A'), CMD_NULL, do_cmd_try_debug },
@@ -620,6 +620,10 @@ void cmd_init(void)
 			converted_list[key].cmd = commands[i].cmd;
 		}
 	}
+
+	/* Enter (Return) opens the command menu too */
+	converted_list['\r'].hook = do_cmd_menu;
+	converted_list['\n'].hook = do_cmd_menu;
 
 	/* Fill in the rest */
 	for (i = 0; i < N_ELEMENTS(converted_list); i++)

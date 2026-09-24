@@ -9,6 +9,7 @@ This fork adds a few features, fixes and a browser port on top of Quickband 2.0.
 
 ## What's new
 
+- **Command menu on Enter:** every command, grouped, with its key
 - **Auto-explore** (`H`), plus `<` / `>` to walk to the nearest known stairs
 - **X11 frontend:** UT32 tile support, big-tile mode, a six-window layout (`play.sh`) and a resize fix
 - **WebAssembly port** (Emscripten + Asyncify): canvas renderer, tiling resizable windows, zoom,

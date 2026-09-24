@@ -42,12 +42,12 @@ Command Summary -- Original keyset
      %  Interact with visuals               ^E  Toggle choice window
      ^  (special - control key)             ^F  Repeat level feeling
      &  Interact with colors                ^G  {reserved}
-     *  Target monster or location          ^H  Use floating help menu
+     *  Target monster or location          ^H  Command menu
      (  Unused                              ^I  (special - tab)
      )  Dump HTML screen dump               ^J  (special - linefeed)
      {  Inscribe an object                  ^K  (unused)
      }  Uninscribe an object                ^L  (unused)
-     [  (unused)                            ^M  (special - return)
+     [  (unused)                            ^M  Command menu (Return)
      ]  Display Itemlist                    ^N  (unused)
      -  Walk (flip pickup)                  ^O  (unused)
      _  Enter store                         ^P  Show previous messages
@@ -117,7 +117,7 @@ Command Summary -- Roguelike keyset
      )  Dump screen dump                    ^J  (alter - south)
      {  Inscribe an object                  ^K  (alter - north)
      }  Uninscribe an object                ^L  (alter - east)
-     [  (unused)                            ^M  (special - return)
+     [  (unused)                            ^M  Command menu (Return)
      ]  Get objects off the floor           ^N  (alter - south east)
      -  Walk (flip pickup)                  ^O  Pilfer from Monsters
      _  Enter store                         ^P  Show previous messages
