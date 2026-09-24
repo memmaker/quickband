@@ -79,7 +79,7 @@ LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 # Object definitions
 GTKOBJS = gtk/main-gtk.o gtk/cairo-utils.o
-MAINOBJS = main.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o $(GTKOBJS)
+MAINOBJS = main.o main-gcu.o main-x11.o main-sdl.o $(GTKOBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 

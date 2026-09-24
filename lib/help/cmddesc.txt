@@ -57,15 +57,25 @@ either have to make a choice between two directions or are disturbed.  Most
 players run by holding down Shift and pressing a direction key.
 
 Go up staircase (<) :
-     Ascend an up staircase.  Going up a staircase will take you to a new
+     Ascend an up staircase.  If you are not standing on one, you walk to the
+nearest up staircase you know of and take it (anything that disturbs you stops
+the walk).  Going up a staircase will take you to a new
 dungeon level unless you are at 50 feet (level 1), in which case you will return
 to the town.  This command takes a full turn.  Some staircases give you the option
 of going up either 50 feet (one level) or 100 feet (two levels).
 
 
+Auto-explore (H) :
+     Walk towards the nearest unexplored part of the level, one step per turn,
+opening doors on the way.  It stops when a monster is in view or anything
+disturbs you, and never picks locks: it stops at a locked door, and pressing
+H again explores elsewhere.
+
+
 Go down staircase (>) :
-     Descend a down staircase.  Going down a staircase will take you to a new
-dungeon level.  This command takes a full turn.  Some staircases give you the option
+     Descend a down staircase.  If you are not standing on one, you walk to the
+nearest down staircase you know of and take it.  Going down a staircase will
+take you to a new dungeon level.  This command takes a full turn.  Some staircases give you the option
 of going down either 50 feet (one level) or 100 feet (two levels).
 
 

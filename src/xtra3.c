@@ -1508,7 +1508,7 @@ static void update_messages_subwindow(game_event_type type, game_event_data *dat
 		u16b count = message_count(i);
 		const char *str = message_str(i);
 
-		if (count == 1)
+		if (count <= 1)
 			msg = str;
 		else
 			msg = format("%s <%dx>", str, count);

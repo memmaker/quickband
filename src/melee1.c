@@ -1659,7 +1659,7 @@ bool make_attack_normal(monster_type *m_ptr)
 
 				case RBE_EXPLODE:
 				{
-					int junk;
+					bool junk;
 					mon_ball(m_idx, GF_SHARD, m_ptr->maxhp*3, 5, p_ptr->py, p_ptr->px);
 					(void)set_stun(p_ptr->timed[TMD_STUN] + 25);
 					mon_take_hit(m_idx, 9999, &junk, "", SOURCE_OTHER);

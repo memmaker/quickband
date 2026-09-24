@@ -897,3 +897,218 @@ void run_step(int dir)
 	move_player(p_ptr->run_cur_dir, FALSE);
 }
 
+
+
+/*
+ * Auto-explore ('H'): walk towards the nearest unexplored grid, one step per
+ * turn.  '<' / '>' reuse it to walk to the nearest known staircase and take it.
+ * Stops on disturb() (monster appears, damage, keypress, ...), when a monster
+ * is in view, or when nothing reachable is left.  Never picks locks: it stops
+ * at a locked door and skips that door the next time.
+ */
+bool auto_explore = FALSE;
+
+static byte explore_seen[MAX_DUNGEON_HGT][MAX_DUNGEON_WID];
+
+/* Heading for stairs instead of exploring: 1 up, -1 down, 0 explore */
+static int explore_stairs = 0;
+
+void explore_reset(void)
+{
+	C_WIPE(explore_seen, MAX_DUNGEON_HGT * MAX_DUNGEON_WID, byte);
+	auto_explore = FALSE;
+	explore_stairs = 0;
+}
+
+static bool explore_known(int y, int x)
+{
+	return (explore_seen[y][x] || (cave_info[y][x] & (CAVE_MARK)));
+}
+
+static bool explore_locked_door(int y, int x)
+{
+	return (cave_known_closed_door(y, x) && cave_ff3_match(y, x, FF3_DOOR_LOCKED));
+}
+
+static bool explore_passable(int y, int x)
+{
+	/* Locked door we stopped at */
+	if (explore_seen[y][x] == 2) return (FALSE);
+	if ((cave_m_idx[y][x] > 0) && mon_list[cave_m_idx[y][x]].ml) return (FALSE);
+
+	/* Known traps */
+	if (cave_player_trap_bold(y, x) &&
+	    !(x_list[cave_x_idx[y][x]].x_flags & (EF1_HIDDEN))) return (FALSE);
+
+	/* Terrain that hurts (lava, acid, ...) */
+	if (!is_player_native(y, x) && f_info[cave_feat[y][x]].dam_non_native) return (FALSE);
+
+	if (cave_known_closed_door(y, x)) return (TRUE);
+	return (cave_ff1_match(y, x, FF1_MOVE) && cave_passable_bold(y, x));
+}
+
+static bool explore_frontier(int y, int x)
+{
+	int d;
+
+	for (d = 0; d < 8; d++)
+	{
+		int yy = y + ddy_ddd[d], xx = x + ddx_ddd[d];
+
+		if (in_bounds(yy, xx) && !explore_known(yy, xx)) return (TRUE);
+	}
+	return (FALSE);
+}
+
+static bool explore_is_stairs(int y, int x, int stairs)
+{
+	return ((stairs > 0) ? cave_up_stairs(y, x) : cave_down_stairs(y, x));
+}
+
+static void explore_take_stairs(int stairs)
+{
+	if (stairs > 0) do_cmd_go_up(CMD_GO_UP, NULL);
+	else do_cmd_go_down(CMD_GO_DOWN, NULL);
+}
+
+/* Returns FALSE (and stops) when there is nothing to do */
+bool explore_step(void)
+{
+	static s16b from[MAX_DUNGEON_HGT][MAX_DUNGEON_WID];
+	static s16b qy[MAX_DUNGEON_HGT * MAX_DUNGEON_WID];
+	static s16b qx[MAX_DUNGEON_HGT * MAX_DUNGEON_WID];
+	int head = 0, tail = 0, y, x, d, i;
+	bool found = FALSE;
+
+	auto_explore = FALSE;
+
+	/* Arrived at the stairs we were heading for: take them */
+	if (explore_stairs && explore_is_stairs(p_ptr->py, p_ptr->px, explore_stairs))
+	{
+		int stairs = explore_stairs;
+
+		explore_stairs = 0;
+		explore_take_stairs(stairs);
+		return (FALSE);
+	}
+
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE] || p_ptr->timed[TMD_BLIND])
+	{
+		msg_print(explore_stairs ? "You cannot find your way right now." :
+		                           "You cannot explore right now.");
+		return (FALSE);
+	}
+
+	/* Remember everything currently in view */
+	for (y = 0; y < p_ptr->cur_map_hgt; y++)
+		for (x = 0; x < p_ptr->cur_map_wid; x++)
+			if (!explore_seen[y][x] && (cave_info[y][x] & (CAVE_MARK | CAVE_SEEN)))
+				explore_seen[y][x] = 1;
+
+	/* Never walk into danger */
+	for (i = 1; i < mon_max; i++)
+	{
+		monster_type *m_ptr = &mon_list[i];
+
+		if (!m_ptr->r_idx || !m_ptr->ml) continue;
+		if (!player_has_los_bold(m_ptr->fy, m_ptr->fx)) continue;
+		msg_print("Something is in view.");
+		return (FALSE);
+	}
+
+	/* Breadth-first search from the player */
+	for (y = 0; y < p_ptr->cur_map_hgt; y++)
+		for (x = 0; x < p_ptr->cur_map_wid; x++) from[y][x] = -1;
+
+	from[p_ptr->py][p_ptr->px] = 8;
+	qy[tail] = p_ptr->py;
+	qx[tail++] = p_ptr->px;
+
+	while (head < tail)
+	{
+		y = qy[head];
+		x = qx[head++];
+
+		if (explore_stairs ?
+		    ((cave_info[y][x] & (CAVE_MARK)) && explore_is_stairs(y, x, explore_stairs)) :
+		    (explore_frontier(y, x) && ((y != p_ptr->py) || (x != p_ptr->px))))
+		{
+			found = TRUE;
+			break;
+		}
+
+		for (d = 0; d < 8; d++)
+		{
+			int yy = y + ddy_ddd[d], xx = x + ddx_ddd[d];
+
+			if (!in_bounds(yy, xx) || (from[yy][xx] != -1)) continue;
+			if (!explore_known(yy, xx) || !explore_passable(yy, xx)) continue;
+			from[yy][xx] = d;
+			qy[tail] = yy;
+			qx[tail++] = xx;
+		}
+	}
+
+	if (!found && explore_stairs)
+	{
+		msg_print((explore_stairs > 0) ? "You know of no way up." : "You know of no way down.");
+		return (FALSE);
+	}
+
+	if (!found)
+	{
+		for (y = 0; y < p_ptr->cur_map_hgt; y++)
+			for (x = 0; x < p_ptr->cur_map_wid; x++)
+				if (explore_seen[y][x] == 2) found = TRUE;
+		msg_print(found ? "Only locked doors are left to explore." : "Nothing left to explore.");
+		return (FALSE);
+	}
+
+	/* Walk back to find the first step */
+	while (1)
+	{
+		d = from[y][x];
+		if ((y - ddy_ddd[d] == p_ptr->py) && (x - ddx_ddd[d] == p_ptr->px)) break;
+		y -= ddy_ddd[d];
+		x -= ddx_ddd[d];
+	}
+
+	y = p_ptr->py + ddy_ddd[d];
+	x = p_ptr->px + ddx_ddd[d];
+
+	/* Never pick locks: stop, and skip this door next time */
+	if (explore_locked_door(y, x))
+	{
+		explore_seen[y][x] = 2;
+		msg_print("You stop at a locked door.");
+		return (FALSE);
+	}
+
+	/* Open a closed door, or take the step */
+	if (cave_known_closed_door(y, x)) explore_open_door(y, x);
+	else
+	{
+		p_ptr->p_energy_use = BASE_ENERGY_MOVE;
+		move_player(ddd[d], FALSE);
+	}
+
+	auto_explore = TRUE;
+	return (TRUE);
+}
+
+/* 'H': explore */
+void do_cmd_explore(void)
+{
+	explore_stairs = 0;
+	explore_step();
+}
+
+/*
+ * '<' / '>' when not on the right stairs: walk to the nearest known
+ * staircase of that kind and take it on arrival.
+ */
+void explore_to_stairs(bool up)
+{
+	explore_stairs = up ? 1 : -1;
+	if (!explore_step()) explore_stairs = 0;
+}

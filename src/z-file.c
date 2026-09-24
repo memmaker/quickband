@@ -67,7 +67,7 @@ int player_egid;
  */
 void safe_setuid_drop(void)
 {
-#ifdef SET_UID
+#if defined(SET_UID) && !defined(USE_WEB)
 # if defined(HAVE_SETRESGID)
 
 	if (setresgid(-1, getgid(), -1) != 0)
@@ -88,7 +88,7 @@ void safe_setuid_drop(void)
  */
 void safe_setuid_grab(void)
 {
-#ifdef SET_UID
+#if defined(SET_UID) && !defined(USE_WEB)
 # if defined(HAVE_SETRESGID)
 
 	if (setresgid(-1, player_egid, -1) != 0)

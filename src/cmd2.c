@@ -113,7 +113,8 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	/* Verify stairs */
 	if (!cave_up_stairs(p_ptr->py, p_ptr->px))
 	{
-		msg_print("I see no up staircase here.");
+		/* Walk to the nearest known up staircase, then take it */
+		explore_to_stairs(TRUE);
 
 		return;
 	}
@@ -205,7 +206,8 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	/* Verify stairs */
 	if (!cave_down_stairs(p_ptr->py, p_ptr->px))
 	{
-		msg_print("I see no down staircase here.");
+		/* Walk to the nearest known down staircase, then take it */
+		explore_to_stairs(FALSE);
 		return;
 	}
 
@@ -1003,6 +1005,17 @@ static bool do_cmd_open_aux(int y, int x)
 
 	/* Result */
 	return (more);
+}
+
+
+/*
+ * Open a known closed (unlocked) door next to the player, for auto-explore
+ * (pathfind.c).  Takes a turn.
+ */
+void explore_open_door(int y, int x)
+{
+	p_ptr->p_energy_use = BASE_ENERGY_MOVE;
+	(void)do_cmd_open_aux(y, x);
 }
 
 

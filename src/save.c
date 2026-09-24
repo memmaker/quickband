@@ -17,6 +17,9 @@
  */
 
 #include "angband.h"
+#ifdef USE_WEB
+#include "main.h"
+#endif
 
 
 ang_file *fff;
@@ -1463,6 +1466,10 @@ bool save_player(void)
 		result = TRUE;
 	}
 
+#ifdef USE_WEB
+	/* Copy the savefile to the browser's localStorage */
+	web_sync_files();
+#endif
 
 	/* Return the result */
 	return (result);

@@ -40,6 +40,11 @@ static const struct module modules[] =
 	{ "gtk", help_gtk, init_gtk },
 #endif /* USE_GTK */
 
+#ifdef USE_WEB
+	/* Registered as "x11" so the X11 pref files are used */
+	{ "x11", help_web, init_web },
+#endif /* USE_WEB */
+
 #ifdef USE_X11
 	{ "x11", help_x11, init_x11 },
 #endif /* USE_X11 */
@@ -416,8 +421,10 @@ int main(int argc, char *argv[])
 	/* Process the player name */
 	process_player_name(TRUE);
 
+#ifndef USE_WEB
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
+#endif
 
 #ifdef USE_SOUND
 

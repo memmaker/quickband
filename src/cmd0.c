@@ -79,6 +79,7 @@ static command_type cmd_action[] =
 	{ "Dig a tunnel",               'T', CMD_NULL, textui_cmd_tunnel },
 	{ "Go up staircase",            '<', CMD_GO_UP, NULL },
 	{ "Go down staircase",          '>', CMD_GO_DOWN, NULL },
+	{ "Auto-explore",               'H', CMD_NULL, do_cmd_explore },
 	{ "Toggle search mode",         'S', CMD_TOGGLE_SEARCH, NULL },
 	{ "Open a door or a chest",     'o', CMD_NULL, textui_cmd_open },
 	{ "Close a door",               'c', CMD_NULL, textui_cmd_close },

@@ -2322,6 +2322,24 @@ static void do_dump_options(void *unused, const char *title)
  * XXX Too many entries.
  */
 
+/*
+ * Menu actions are called as action_f (object, name).  Calling a function
+ * with a different signature through that pointer is undefined behaviour
+ * and aborts under WebAssembly, so wrap the plain commands.
+ */
+#define OPTION_ACTION(name, call) \
+	static void name(void *obj, const char *title) \
+	{ (void)obj; (void)title; call; }
+
+OPTION_ACTION(opt_act_win, do_cmd_options_win())
+OPTION_ACTION(opt_act_delay, do_cmd_delay())
+OPTION_ACTION(opt_act_hp_warn, do_cmd_hp_warn())
+OPTION_ACTION(opt_act_lazymove, do_cmd_lazymove_delay())
+OPTION_ACTION(opt_act_pref_file, do_cmd_pref_file_hack((long)obj))
+OPTION_ACTION(opt_act_macros, do_cmd_macros())
+OPTION_ACTION(opt_act_visuals, do_cmd_visuals())
+OPTION_ACTION(opt_act_colors, do_cmd_colors())
+
 static menu_action option_actions [] =
 {
 	{'a', "Interface options", do_cmd_options_aux, (void*)0},
@@ -2330,17 +2348,17 @@ static menu_action option_actions [] =
 	{'f', "Birth (difficulty) options", do_cmd_options_aux, (void*)3},
 	{'g', "Cheat options", do_cmd_options_aux, (void*)4},
 	{0, 0, 0, 0}, /* Load and append */
-	{'w', "Subwindow display settings", (action_f) do_cmd_options_win, 0},
-	{'s', "Item squelch and Autoinscribe Menu", (action_f) do_cmd_squelch_autoinsc, 0},
-	{'d', "Set base delay factor", (action_f) do_cmd_delay, 0},
-	{'h', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0},
-	{'i', "Set movement delay", (action_f) do_cmd_lazymove_delay, 0},
-	{'l', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
+	{'w', "Subwindow display settings", opt_act_win, 0},
+	{'s', "Item squelch and Autoinscribe Menu", do_cmd_squelch_autoinsc, 0},
+	{'d', "Set base delay factor", opt_act_delay, 0},
+	{'h', "Set hitpoint warning", opt_act_hp_warn, 0},
+	{'i', "Set movement delay", opt_act_lazymove, 0},
+	{'l', "Load a user pref file", opt_act_pref_file, (void*)20},
 	{'o', "Save options", do_dump_options, 0},
 	{0, 0, 0, 0}, /* Interact with */
-	{'m', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
-	{'v', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
-	{'c', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
+	{'m', "Interact with macros (advanced)", opt_act_macros, 0},
+	{'v', "Interact with visuals (advanced)", opt_act_visuals, 0},
+	{'c', "Interact with colours (advanced)", opt_act_colors, 0},
 };
 
 static menu_type option_menu;

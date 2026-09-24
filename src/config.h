@@ -52,11 +52,13 @@
  * OPTION: Create and use a hidden directory in the users home directory
  * for storing pref files and character dumps.
  */
-#ifdef SET_UID
+/* Disabled: keep pref files, notes and dumps in lib/user, next to the game
+ * (the ~/.angband/Quickband directory was never created on macOS). */
+#if 0
 # ifndef PRIVATE_USER_PATH
 #  define PRIVATE_USER_PATH "~/.angband"
 # endif /* PRIVATE_USER_PATH */
-#endif /* SET_UID */
+#endif
 
 
 /*

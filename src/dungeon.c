@@ -1834,7 +1834,7 @@ void process_player(void)
 	}
 
 	/* Check for "player abort" */
-	if (p_ptr->running ||
+	if (p_ptr->running || auto_explore ||
 	    p_ptr->command_rep ||
 	    (p_ptr->resting && !(turn & 0x7F)))
 	{
@@ -1906,6 +1906,12 @@ void process_player(void)
 
 			/* Take a turn */
 			p_ptr->p_energy_use = BASE_ENERGY_MOVE;
+		}
+
+		/* Auto-exploring (or walking to stairs) */
+		else if (auto_explore)
+		{
+			explore_step();
 		}
 
 		/* Running */
@@ -2470,7 +2476,11 @@ static void dungeon(void)
 static void process_some_user_pref_files(void)
 {
 	char buf[1024];
+	u32b old_flags[ANGBAND_TERM_MAX], new_flags[ANGBAND_TERM_MAX];
+	int i;
 
+	/* Remember the subwindow flags ("W:" lines may change them) */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++) old_flags[i] = op_ptr->window_flag[i];
 
 	/* Process the "user.prf" file */
 	(void)process_pref_file("user.prf");
@@ -2489,6 +2499,14 @@ static void process_some_user_pref_files(void)
 
 	/* Process the "PLAYER.prf" file */
 	(void)process_pref_file(buf);
+
+	/* Apply changed subwindow flags properly, so the windows get updated */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++)
+	{
+		new_flags[i] = op_ptr->window_flag[i];
+		op_ptr->window_flag[i] = old_flags[i];
+	}
+	subwindows_set_flags(new_flags, ANGBAND_TERM_MAX);
 }
 
 

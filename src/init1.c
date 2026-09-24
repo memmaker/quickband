@@ -1502,7 +1502,7 @@ errr parse_f_info(char *buf, header *head)
 	/* Process 'M' for "Mimic" (one line only) */
 	else if (buf[0] == 'M')
 	{
-		u32b f_mimic;
+		unsigned long f_mimic;
 
 		/* There better be a current f_ptr */
 		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);

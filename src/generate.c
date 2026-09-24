@@ -10488,6 +10488,9 @@ void generate_cave(void)
 	/* Don't know feeling yet */
 	do_feeling = FALSE;
 
+	/* New level: forget what auto-explore has seen */
+	explore_reset();
+
 	/*allow uniques to be generated everywhere but in nests/pits*/
 	allow_uniques = TRUE;
 

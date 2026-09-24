@@ -16,7 +16,7 @@ Command Summary -- Original keyset
      e  Equipment list                       E  Eat some food
      f  Fire an item                         F  Fuel your lantern/torch
      g  Get objects off the floor            G  Gain spells/prayers/abilities
-     h  (unused)                             H  (unused)
+     h  (unused)                             H  Auto-explore
      i  Inventory list                       I  Observe an item
      j  Jam a door                           J  (unused)
      k  Destroy an item                      K  (unused)

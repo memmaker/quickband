@@ -1465,3 +1465,11 @@ extern void do_cmd_borg(void);
 extern u16b lazymove_delay;
 
 #endif /* !INCLUDED_EXTERNS_H */
+
+/* pathfind.c: auto-explore / walk to stairs */
+extern bool auto_explore;
+extern void explore_reset(void);
+extern bool explore_step(void);
+extern void do_cmd_explore(void);
+extern void explore_to_stairs(bool up);
+extern void explore_open_door(int y, int x);

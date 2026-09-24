@@ -994,19 +994,6 @@ static errr Infowin_impell(int x, int y)
 }
 
 
-/*
- * Resize an infowin
- */
-static errr Infowin_resize(int w, int h)
-{
-	/* Execute the request */
-	XResizeWindow(Metadpy->dpy, Infowin->win, w, h);
-
-	/* Success */
-	return (0);
-}
-
-
 #ifndef IGNORE_UNUSED_FUNCTIONS
 
 /*
@@ -1887,7 +1874,7 @@ static errr CheckEvent(bool wait)
 		/* Move and/or Resize */
 		case ConfigureNotify:
 		{
-			int cols, rows, wid, hgt;
+			int cols, rows;
 
 			int ox = Infowin->ox;
 			int oy = Infowin->oy;
@@ -1913,19 +1900,19 @@ static errr CheckEvent(bool wait)
 				if (rows < 24) rows = 24;
 			}
 
-			/* Desired size of window */
-			wid = cols * td->tile_wid + (ox + ox);
-			hgt = rows * td->tile_hgt + (oy + oy);
-
-			/* Resize the Term (if needed) */
-			(void)Term_resize(cols, rows);
-
-			/* Resize the windows if any "change" is needed */
-			if ((Infowin->w != wid) || (Infowin->h != hgt))
+			/*
+			 * Don't snap the window back to a whole number of cells:
+			 * window managers that ignore the resize increments (XQuartz)
+			 * fight the snap during a live drag and the window oscillates.
+			 * The spare pixels just become a margin.
+			 */
+			/* Resize the Term (if needed), and repaint it cleanly */
+			if ((cols != Term->wid) || (rows != Term->hgt))
 			{
-				/* Resize window */
 				Infowin_set(td->win);
-				Infowin_resize(wid, hgt);
+				Infowin_wipe();
+				(void)Term_resize(cols, rows);
+				Term_redraw();
 			}
 
 			break;
@@ -2195,6 +2182,181 @@ static void save_prefs(void)
 /*
  * Initialize a term_data
  */
+/*
+ * Tiles ("-g"): Buzzkill's UT32 set, lib/xtra/graf/32x32.bmp (24-bit) plus
+ * mask32.bmp (1-bit, set = transparent).  Each cell is the terrain tile with
+ * the object/monster tile on top, scaled nearest-neighbour to the cell size.
+ */
+#define TILE_SRC	32
+
+static unsigned long *tile_pix;	/* X pixel values of the whole sheet */
+static byte *tile_mask;		/* 1 = transparent */
+static int tile_sheet_w, tile_sheet_h;
+static XImage *tile_img;	/* One cell, reused */
+
+/* Read an uncompressed BMP into memory; returns the pixel rows (bottom-up) */
+static byte *read_bmp(cptr path, int *w, int *h, int *bpp, int *stride, byte **pal)
+{
+	FILE *f = fopen(path, "rb");
+	byte *buf;
+	long size;
+
+	if (!f) return (NULL);
+	fseek(f, 0, SEEK_END);
+	size = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	buf = malloc(size);
+	if (!buf || (fread(buf, 1, size, f) != (size_t)size) || (buf[0] != 'B') || (buf[1] != 'M'))
+	{
+		fclose(f);
+		free(buf);
+		return (NULL);
+	}
+	fclose(f);
+
+#define LE16(P) ((P)[0] | ((P)[1] << 8))
+#define LE32(P) ((u32b)LE16(P) | ((u32b)LE16((P) + 2) << 16))
+
+	*w = (int)LE32(buf + 18);
+	*h = (int)LE32(buf + 22);
+	*bpp = LE16(buf + 28);
+	*stride = ((*w * *bpp + 31) / 32) * 4;
+	*pal = buf + 14 + LE32(buf + 14);
+
+	/* Only bottom-up, uncompressed files */
+	if ((*h <= 0) || LE32(buf + 30))
+	{
+		free(buf);
+		return (NULL);
+	}
+
+	/* The whole file is kept; callers find the pixels at offset 10 */
+	return (buf);
+}
+
+/* Pack an RGB value for a TrueColor visual */
+static unsigned long tile_rgb(Visual *v, byte r, byte g, byte b)
+{
+	unsigned long m[3], out = 0;
+	byte c[3];
+	int i;
+
+	m[0] = v->red_mask; m[1] = v->green_mask; m[2] = v->blue_mask;
+	c[0] = r; c[1] = g; c[2] = b;
+
+	for (i = 0; i < 3; i++)
+	{
+		unsigned long mask = m[i], val = c[i];
+		int shift = 0, bits = 0;
+
+		while (mask && !(mask & 1)) { mask >>= 1; shift++; }
+		while (mask & 1) { mask >>= 1; bits++; }
+		if (bits < 8) val >>= (8 - bits);
+		else val <<= (bits - 8);
+		out |= val << shift;
+	}
+	return (out);
+}
+
+/* Load the sheet and mask; FALSE if graphics can't be used */
+static bool load_tiles(void)
+{
+	char path[1024];
+	byte *img, *msk, *pal, *mpal;
+	int w, h, bpp, stride, mw, mh, mbpp, mstride, x, y;
+	Visual *v = DefaultVisual(Metadpy->dpy, DefaultScreen(Metadpy->dpy));
+	u32b off, moff;
+
+	if (v->class != TrueColor) return (FALSE);
+
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, "32x32.bmp");
+	img = read_bmp(path, &w, &h, &bpp, &stride, &pal);
+	if (!img) return (FALSE);
+
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, "mask32.bmp");
+	msk = read_bmp(path, &mw, &mh, &mbpp, &mstride, &mpal);
+	if (!msk || (bpp != 24) || (mbpp != 1) || (mw != w) || (mh != h))
+	{
+		free(img);
+		free(msk);
+		return (FALSE);
+	}
+
+	off = LE32(img + 10);
+	moff = LE32(msk + 10);
+
+	tile_sheet_w = w;
+	tile_sheet_h = h;
+	tile_pix = malloc(sizeof(unsigned long) * w * h);
+	tile_mask = malloc(w * h);
+
+	for (y = 0; y < h; y++)
+	{
+		byte *row = img + off + (h - 1 - y) * stride;
+		byte *mrow = msk + moff + (h - 1 - y) * mstride;
+
+		for (x = 0; x < w; x++)
+		{
+			int bit = (mrow[x >> 3] >> (7 - (x & 7))) & 1;
+
+			/* BGR order */
+			tile_pix[y * w + x] = tile_rgb(v, row[x * 3 + 2], row[x * 3 + 1], row[x * 3]);
+
+			/* Transparent where the mask's palette colour is white */
+			tile_mask[y * w + x] = (mpal[bit * 4] > 127);
+		}
+	}
+
+	free(img);
+	free(msk);
+	return (TRUE);
+}
+
+/*
+ * Draw some tiles.  In bigtile mode a tile covers two cells; the second one
+ * arrives as the 255/-1 placeholder and is skipped.
+ */
+static errr Term_pict_x11(int x, int y, int n, const byte *ap, const char *cp,
+                          const byte *tap, const char *tcp)
+{
+	term_data *td = (term_data*)(Term->data);
+	int w = td->tile_wid2, h = td->tile_hgt;
+	int i, dx, dy;
+
+	for (i = 0; i < n; i++)
+	{
+		int fx = (cp[i] & 0x7F) * TILE_SRC, fy = (ap[i] & 0x7F) * TILE_SRC;
+		int bx = (tcp[i] & 0x7F) * TILE_SRC, by = (tap[i] & 0x7F) * TILE_SRC;
+
+		/* Placeholder for the right half of a big tile */
+		if ((ap[i] == 255) && (cp[i] == (char)-1)) continue;
+
+		/* Off the sheet */
+		if ((fx + TILE_SRC > tile_sheet_w) || (fy + TILE_SRC > tile_sheet_h)) fx = fy = 0;
+		if ((bx + TILE_SRC > tile_sheet_w) || (by + TILE_SRC > tile_sheet_h)) bx = by = 0;
+
+		for (dy = 0; dy < h; dy++)
+		{
+			int sy = dy * TILE_SRC / h;
+
+			for (dx = 0; dx < w; dx++)
+			{
+				int sx = dx * TILE_SRC / w;
+				long k = (long)(fy + sy) * tile_sheet_w + fx + sx;
+
+				if (tile_mask[k]) k = (long)(by + sy) * tile_sheet_w + bx + sx;
+				XPutPixel(tile_img, dx, dy, tile_pix[k]);
+			}
+		}
+
+		XPutImage(Metadpy->dpy, Infowin->win, clr[TERM_WHITE]->gc, tile_img, 0, 0,
+		          (x + i) * td->tile_wid + Infowin->ox, y * td->tile_hgt + Infowin->oy, w, h);
+	}
+
+	return (0);
+}
+
+
 static errr term_data_init(term_data *td, int i)
 {
 	term *t = &td->t;
@@ -2541,6 +2703,13 @@ static errr term_data_init(term_data *td, int i)
 	t->wipe_hook = Term_wipe_x11;
 	t->text_hook = Term_text_x11;
 
+	/* Tiles */
+	if (use_graphics)
+	{
+		t->pict_hook = Term_pict_x11;
+		t->higher_pict = TRUE;
+	}
+
 	/* Save the data */
 	t->data = td;
 
@@ -2552,7 +2721,7 @@ static errr term_data_init(term_data *td, int i)
 }
 
 
-const char help_x11[] = "Basic X11, subopts -d<display> -n<windows> -x<file>";
+const char help_x11[] = "Basic X11, subopts -d<display> -n<windows> -x<file> -g (tiles) -b (big tiles)";
 
 static void hook_quit(cptr str)
 {
@@ -2647,6 +2816,20 @@ errr init_x11(int argc, char **argv)
 			continue;
 		}
 
+		/* Tiles (UT32 32x32 set) */
+		if (prefix(argv[i], "-g"))
+		{
+			use_graphics = GRAPHICS_DAVID_GERVAIS;
+			continue;
+		}
+
+		/* Big tiles: each map grid is two text cells wide */
+		if (prefix(argv[i], "-b"))
+		{
+			use_bigtile = TRUE;
+			continue;
+		}
+
 		plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
@@ -2708,7 +2891,7 @@ errr init_x11(int argc, char **argv)
 
 
 	/* Prepare normal colors */
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < MAX_COLORS; ++i)
 	{
 		Pixell pixel;
 
@@ -2739,6 +2922,28 @@ errr init_x11(int argc, char **argv)
 		Infoclr_init_ppn(pixel, Metadpy->bg, "cpy", 0);
 	}
 
+
+	/* Load the tiles (falls back to text if that fails) */
+	if (use_graphics)
+	{
+		if (load_tiles())
+		{
+			/* The game checks arg_graphics too (player colour, bolts) */
+			arg_graphics = GRAPHICS_DAVID_GERVAIS;
+			ANGBAND_GRAF = "david";
+			/* Room for one cell up to 128x64 (a big tile) */
+			tile_img = XCreateImage(Metadpy->dpy,
+				DefaultVisual(Metadpy->dpy, DefaultScreen(Metadpy->dpy)),
+				Metadpy->depth, ZPixmap, 0, NULL, 128, 64, 32, 0);
+			tile_img->data = malloc(tile_img->bytes_per_line * 64);
+		}
+		else
+		{
+			plog("Could not load lib/xtra/graf/32x32.bmp / mask32.bmp; using text.");
+			use_graphics = GRAPHICS_NONE;
+			use_bigtile = FALSE;
+		}
+	}
 
 	/* Initialize the windows */
 	for (i = 0; i < num_term; i++)
