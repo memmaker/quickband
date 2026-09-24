@@ -489,11 +489,29 @@ static bool cmd_sub_action(char cmd, void *db, int oid)
 /*
  * Display a list of commands.
  */
+/*
+ * Place a pop-up list of n entries, w columns wide, as close to (x, y) as
+ * the screen allows: exactly as big as its content, scrolling only when it
+ * does not fit on the screen.  One space between text and border.
+ */
+static void cmd_menu_box(region *area, int x, int y, int w, int n)
+{
+	area->width = MIN(w, Term->wid - 4);
+	area->page_rows = MIN(n, Term->hgt - 2);
+	area->col = MAX(MIN(x, Term->wid - area->width - 2), 2);
+	area->row = MAX(MIN(y, Term->hgt - 1 - area->page_rows), 1);
+
+	window_make(area->col - 2, area->row - 1, area->col + area->width + 1,
+	            area->row + area->page_rows);
+}
+
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
 	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, cmd_sub_action };
-	region area = { 23, 4, 37, 13 };
+	region area;
+	size_t i;
+	int w = 0;
 
 	ui_event_data evt;
 	int cursor = 0;
@@ -504,11 +522,16 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = list->len;
 	menu.menu_data = list->list;
-	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
+
+	/* Width: "description (key)", with ^X for control keys */
+	for (i = 0; i < list->len; i++)
+		w = MAX(w, (int)strlen(list->list[i].desc) +
+		        ((KTRL(list->list[i].key) == list->list[i].key) ? 5 : 4));
 
 	/* Set up the screen */
 	screen_save();
-	window_make(21, 3, 62, 17);
+	cmd_menu_box(&area, 23, 4, w, list->len);
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
 
 	/* Select an entry */
 	evt = menu_select(&menu, &cursor, 0);
@@ -560,7 +583,9 @@ static void do_cmd_menu(void)
 {
 	menu_type menu;
 	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action };
-	region area = { 21, 5, 37, 6 };
+	region area;
+	size_t i;
+	int w = 0;
 
 	ui_event_data evt;
 	int cursor = 0;
@@ -571,11 +596,14 @@ static void do_cmd_menu(void)
 	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = N_ELEMENTS(cmds_all) - 1;
 	menu.menu_data = &chosen_command;
-	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
+
+	for (i = 0; i < N_ELEMENTS(cmds_all) - 1; i++)
+		w = MAX(w, (int)strlen(cmds_all[i].name));
 
 	/* Set up the screen */
 	screen_save();
-	window_make(19, 4, 58, 11);
+	cmd_menu_box(&area, 21, 5, w, N_ELEMENTS(cmds_all) - 1);
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
 
 	/* Select an entry */
 	evt = menu_select(&menu, &cursor, 0);

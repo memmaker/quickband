@@ -3948,7 +3948,7 @@ static int inv_dir(char key)
 /* Context menu for one item: returns the chosen action, or -1 */
 static int inv_context_menu(int item, int row, int col)
 {
-	int acts[N_ELEMENTS(inv_act_order)], n = 0, cur = 0, i, w = 26;
+	int acts[N_ELEMENTS(inv_act_order)], n = 0, cur = 0, i, w, namew = 0;
 	char o_name[80];
 
 	for (i = 0; i < (int)N_ELEMENTS(inv_act_order); i++)
@@ -3956,18 +3956,22 @@ static int inv_context_menu(int item, int row, int col)
 
 	if (!n) return (-1);
 
+	/* Box exactly as big as its content: "> name  k" lines and the item name */
+	for (i = 0; i < n; i++)
+		namew = MAX(namew, (int)strlen((acts[i] == INV_THROW) ? "Throw" : inv_act_name[acts[i]]));
 	object_desc(o_name, sizeof(o_name), &inventory[item], ODESC_PREFIX | ODESC_FULL);
-	o_name[w - 2] = '\0';
+	w = MIN(MAX(namew + 5, (int)strlen(o_name) + 1), Term->wid - 3);
+	if ((int)strlen(o_name) > w - 1) o_name[w - 1] = '\0';
 
 	/* Box left of the list, next to the item */
-	col = MAX(col - w - 3, 0);
+	col = MAX(col - w - 4, 0);
 	if (row + n + 3 > Term->hgt) row = MAX(Term->hgt - n - 3, 1);
 
 	while (1)
 	{
 		ui_event_data ke;
 
-		window_make(col, row, col + w + 1, row + n + 2);
+		window_make(col, row, col + w + 2, row + n + 2);
 		c_put_str(tval_to_attr[inventory[item].tval % N_ELEMENTS(tval_to_attr)],
 		          o_name, row + 1, col + 2);
 
@@ -3977,7 +3981,7 @@ static int inv_context_menu(int item, int row, int col)
 			char key = (acts[i] == INV_THROW) ? 'v' : inv_act_key[acts[i]];
 			cptr name = (acts[i] == INV_THROW) ? "Throw" : inv_act_name[acts[i]];
 
-			c_put_str(attr, format("%c %-20s %c", (i == cur) ? '>' : ' ', name, key),
+			c_put_str(attr, format("%c %-*s  %c", (i == cur) ? '>' : ' ', namew, name, key),
 			          row + 2 + i, col + 1);
 		}
 
@@ -3986,7 +3990,7 @@ static int inv_context_menu(int item, int row, int col)
 		if (ke.type == EVT_MOUSE)
 		{
 			i = ke.mousey - row - 2;
-			if ((i >= 0) && (i < n) && (ke.mousex >= col) && (ke.mousex <= col + w + 1))
+			if ((i >= 0) && (i < n) && (ke.mousex >= col) && (ke.mousex <= col + w + 2))
 				return (acts[i]);
 			return (-1);
 		}
