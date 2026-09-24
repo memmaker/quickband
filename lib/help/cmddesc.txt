@@ -71,6 +71,23 @@ a command, with the arrow keys and Enter (or the mouse); Escape goes back.
 Nothing to remember: every command in the game can be run from here.
 
 
+Inventory and equipment (i, e) :
+     The list has a cursor.  A letter runs the item's main action (eat,
+quaff, read, use, wear, take off...), Shift+letter drops it and Ctrl+letter
+examines it.  Enter, Space, 5 or a click opens a menu of everything you can
+do with the highlighted item.  After an action the list opens again unless a
+monster is in view.  Any other key works as a command, as before.
+     Keypad: 8/2 move, 4/6 switch inventory and equipment, 5 or Enter opens
+the item's menu, + main action, - drop, * examine, 0 or . closes.
+
+Choosing an item (all commands) :
+     Every "which item?" prompt shows the same list with a cursor: 8/2 (or
+the arrow keys) move, 5/Enter/Space or a click chooses, 4/6 switches between
+inventory, equipment and floor, 0 cancels.  Letters and @-inscriptions work
+as before; the digits 2, 4, 5, 6 and 8 are cursor keys here, so @1, @3, @7,
+@9 and @0 are the inscription tags that still work from the keypad.
+
+
 Auto-explore (H) :
      Walk towards the nearest unexplored part of the level, one step per turn,
 opening doors on the way.  It stops when a monster is in view or anything

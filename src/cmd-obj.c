@@ -3742,26 +3742,11 @@ bool trap_related_object(object_type *o_ptr)
 
 /*** Old-style noun-verb functions ***/
 
-/* Generic "do item action" function */
-static void do_item(item_act act)
+/* Run an item action on an item that has already been chosen */
+static void do_item_on(item_act act, int item)
 {
-	int item;
 	object_type *o_ptr;
 	bool cmd_needs_aim = FALSE;
-
-	cptr q, s;
-
-	if (item_actions[act].prereq)
-	{
-		if (!item_actions[act].prereq())
-			return;
-	}
-
-	/* Get item */
-	q = item_actions[act].prompt;
-	s = item_actions[act].noop;
-	item_tester_hook = item_actions[act].filter;
-	if (!get_item(&item, q, s, item_actions[act].mode)) return;
 
 	/* Get the item */
 	o_ptr = object_from_item_idx(item);
@@ -3793,6 +3778,27 @@ static void do_item(item_act act)
 		cmd_insert(item_actions[act].command, item);
 }
 
+/* Generic "do item action" function */
+static void do_item(item_act act)
+{
+	int item;
+	cptr q, s;
+
+	if (item_actions[act].prereq)
+	{
+		if (!item_actions[act].prereq())
+			return;
+	}
+
+	/* Get item */
+	q = item_actions[act].prompt;
+	s = item_actions[act].noop;
+	item_tester_hook = item_actions[act].filter;
+	if (!get_item(&item, q, s, item_actions[act].mode)) return;
+
+	do_item_on(act, item);
+}
+
 /* Wrappers */
 void textui_cmd_uninscribe(void) { do_item(ACTION_UNINSCRIBE); }
 void textui_cmd_inscribe(void) { do_item(ACTION_INSCRIBE); }
@@ -3812,3 +3818,317 @@ void textui_cmd_eat_food(void) { do_item(ACTION_EAT_FOOD); }
 void textui_cmd_quaff_potion(void) { do_item(ACTION_QUAFF_POTION); }
 void textui_cmd_read_scroll(void) { do_item(ACTION_READ_SCROLL); }
 void textui_cmd_refill(void) { do_item(ACTION_REFILL); }
+
+
+/*** Inventory and equipment screens (RVIP, modelled on "contractor") ***/
+
+/*
+ * The list gets a cursor.  A letter runs the item's main action (use, wear,
+ * take off), Shift+letter drops it and Ctrl+letter examines it.  Enter,
+ * Space or a click opens a menu of everything that can be done with the
+ * highlighted item.  Any other key is taken as a command, as before.
+ * After an action the screen comes back (see inven_reopen) unless a monster
+ * is in view.
+ */
+
+/* 1 = show the inventory again before the next command, 2 = equipment */
+int inven_reopen = 0;
+
+/* Pseudo action: throw */
+#define INV_THROW	100
+
+/* Menu names and original-keyset keys of the item_actions[] entries */
+static const char *inv_act_name[] =
+{
+	"Uninscribe", "Inscribe", "Examine", "Take off", "Wear / wield", "Drop",
+	"Browse", "Study", "Cast / pray", "Use", "Aim", "Zap", "Activate",
+	"Eat", "Quaff", "Read", "Refuel with it"
+};
+static const char inv_act_key[] =
+{
+	'}', '{', 'I', 't', 'w', 'd', 'b', 'G', 'm', 'u', 'a', 'z', 'A',
+	'E', 'q', 'r', 'F'
+};
+
+/* Menu order; the first one that fits is the item's main action */
+static const int inv_act_order[] =
+{
+	ACTION_EAT_FOOD, ACTION_QUAFF_POTION, ACTION_READ_SCROLL,
+	ACTION_USE_STAFF, ACTION_AIM_WAND, ACTION_ZAP_ROD, ACTION_CAST,
+	ACTION_WIELD, ACTION_TAKEOFF, ACTION_REFILL, ACTION_ACTIVATE,
+	ACTION_BROWSE, ACTION_STUDY, ACTION_EXAMINE, INV_THROW, ACTION_DROP,
+	ACTION_INSCRIBE, ACTION_UNINSCRIBE
+};
+
+static bool inv_act_ok(int act, int item)
+{
+	object_type *o_ptr = &inventory[item];
+	int where = (item >= INVEN_WIELD) ? USE_EQUIP : USE_INVEN;
+
+	if (!o_ptr->k_idx) return (FALSE);
+	if (act == INV_THROW) return (item < INVEN_WIELD);
+	if (!(item_actions[act].mode & where)) return (FALSE);
+	return (!item_actions[act].filter || item_actions[act].filter(o_ptr));
+}
+
+static int inv_main_act(int item)
+{
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(inv_act_order); i++)
+		if (inv_act_ok(inv_act_order[i], item)) return (inv_act_order[i]);
+
+	return (ACTION_EXAMINE);
+}
+
+/* Run an action; the caller has restored the map already */
+static void inv_run(int act, int item, bool equip)
+{
+	inven_reopen = equip ? 2 : 1;
+
+	if (act == INV_THROW)
+	{
+		int dir;
+
+		if (get_aim_dir(&dir, FALSE)) cmd_insert(CMD_THROW, item, dir);
+		return;
+	}
+
+	if (item_actions[act].prereq && !item_actions[act].prereq()) return;
+
+	do_item_on(act, item);
+}
+
+/* Show the list again only when nothing is watching the player */
+bool inven_may_reopen(void)
+{
+	int i;
+
+	if (p_ptr->is_dead || p_ptr->leaving) return (FALSE);
+
+	for (i = 1; i < mon_max; i++)
+	{
+		monster_type *m_ptr = &mon_list[i];
+
+		if (!m_ptr->r_idx || !m_ptr->ml) continue;
+		if (player_has_los_bold(m_ptr->fy, m_ptr->fx)) return (FALSE);
+	}
+
+	return (TRUE);
+}
+
+/* First slot of the list, and one past the last slot the cursor can reach */
+static int inv_first(bool equip) { return (equip ? INVEN_WIELD : 0); }
+static int inv_end(bool equip) { return (equip ? INVEN_TOTAL : INVEN_PACK); }
+
+static bool inv_used(bool equip, int item)
+{
+	return ((item >= inv_first(equip)) && (item < inv_end(equip)) &&
+	        inventory[item].k_idx);
+}
+
+/* Next used slot from item in steps of dir, or -1 */
+static int inv_step(bool equip, int item, int dir)
+{
+	for (item += dir; (item >= inv_first(equip)) && (item < inv_end(equip)); item += dir)
+		if (inventory[item].k_idx) return (item);
+
+	return (-1);
+}
+
+/* Up (8) / down (2) from arrow keys or the number pad; letters stay items */
+static int inv_dir(char key)
+{
+	if (key == ARROW_UP) return (8);
+	if (key == ARROW_DOWN) return (2);
+	if ((key == '8') || (key == '2')) return (key - '0');
+	return (0);
+}
+
+/* Context menu for one item: returns the chosen action, or -1 */
+static int inv_context_menu(int item, int row, int col)
+{
+	int acts[N_ELEMENTS(inv_act_order)], n = 0, cur = 0, i, w = 26;
+	char o_name[80];
+
+	for (i = 0; i < (int)N_ELEMENTS(inv_act_order); i++)
+		if (inv_act_ok(inv_act_order[i], item)) acts[n++] = inv_act_order[i];
+
+	if (!n) return (-1);
+
+	object_desc(o_name, sizeof(o_name), &inventory[item], ODESC_PREFIX | ODESC_FULL);
+	o_name[w - 2] = '\0';
+
+	/* Box left of the list, next to the item */
+	col = MAX(col - w - 3, 0);
+	if (row + n + 3 > Term->hgt) row = MAX(Term->hgt - n - 3, 1);
+
+	while (1)
+	{
+		ui_event_data ke;
+
+		window_make(col, row, col + w + 1, row + n + 2);
+		c_put_str(tval_to_attr[inventory[item].tval % N_ELEMENTS(tval_to_attr)],
+		          o_name, row + 1, col + 2);
+
+		for (i = 0; i < n; i++)
+		{
+			byte attr = (i == cur) ? TERM_L_BLUE : TERM_WHITE;
+			char key = (acts[i] == INV_THROW) ? 'v' : inv_act_key[acts[i]];
+			cptr name = (acts[i] == INV_THROW) ? "Throw" : inv_act_name[acts[i]];
+
+			c_put_str(attr, format("%c %-20s %c", (i == cur) ? '>' : ' ', name, key),
+			          row + 2 + i, col + 1);
+		}
+
+		ke = inkey_ex();
+
+		if (ke.type == EVT_MOUSE)
+		{
+			i = ke.mousey - row - 2;
+			if ((i >= 0) && (i < n) && (ke.mousex >= col) && (ke.mousex <= col + w + 1))
+				return (acts[i]);
+			return (-1);
+		}
+
+		if ((ke.key == ESCAPE) || (ke.key == '0') || (ke.key == '.') ||
+		    (ke.key == '4') || (ke.key == ARROW_LEFT)) return (-1);
+		if (inv_dir(ke.key) == 8) cur = (cur + n - 1) % n;
+		else if (inv_dir(ke.key) == 2) cur = (cur + 1) % n;
+		else if ((ke.key == '\r') || (ke.key == '\n') || (ke.key == ' ') || (ke.key == '5') ||
+		         (ke.key == '6') || (ke.key == ARROW_RIGHT)) return (acts[cur]);
+		else
+		{
+			/* The usual command key runs that action */
+			for (i = 0; i < n; i++)
+				if (ke.key == ((acts[i] == INV_THROW) ? 'v' : inv_act_key[acts[i]]))
+					return (acts[i]);
+		}
+	}
+}
+
+void textui_inven_screen(bool equip)
+{
+	int cursor = -1;
+
+	inven_reopen = 0;
+
+	screen_save();
+
+	while (1)
+	{
+		ui_event_data ke;
+		int item = -1, act = -1, row;
+		char key, last;
+
+		/* Keep the cursor on an item */
+		if (!inv_used(equip, cursor)) cursor = inv_step(equip, inv_first(equip) - 1, 1);
+
+		/* Draw the list with the cursor */
+		screen_load();
+		screen_save();
+		item_tester_full = TRUE;
+		show_obj_cursor = (cursor < 0) ? NULL : &inventory[cursor];
+		if (equip) show_equip(OLIST_WEIGHT);
+		else show_inven(OLIST_WEIGHT | OLIST_QUIVER);
+		show_obj_cursor = NULL;
+		item_tester_full = FALSE;
+
+		if (equip)
+			prt("(Equipment) Command: ", 0, 0);
+		else
+			prt(format("(Inventory) Burden %d.%dlb (%d%% capacity). Command: ",
+			    p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+			    (10 * p_ptr->total_weight) / (6 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]])), 0, 0);
+
+		/* Key legend under the list */
+		last = index_to_label(MAX(inv_step(equip, inv_end(equip), -1), inv_first(equip)));
+		row = MIN(show_obj_row + show_obj_rows + 1, Term->hgt - 2);
+		c_prt(TERM_L_UMBER, format(" a-%c or +: %s, A-%c or -: drop, ^a-^%c or *: examine", last,
+		      equip ? "take off" : "use/wear", toupper((unsigned char)last), last),
+		      row, MAX(MIN(show_obj_col - 2, Term->wid - 62), 0));
+		c_prt(TERM_L_UMBER, format(" 8/2 + 5/Enter: all actions, 4/6: %s, 0: close",
+		      equip ? "inventory" : "equipment"),
+		      row + 1, MAX(MIN(show_obj_col - 2, Term->wid - 62), 0));
+
+		ke = inkey_ex();
+		key = ke.key;
+
+		if (ke.type == EVT_MOUSE)
+		{
+			row = ke.mousey - show_obj_row;
+			if ((row < 0) || (row >= show_obj_rows) || !show_obj_objs[row]) break;
+			item = show_obj_objs[row] - inventory;
+			if ((ke.mousex < show_obj_col - 2) || !inv_used(equip, item)) break;
+			cursor = item;
+			key = '\r';
+		}
+
+		if ((key == ESCAPE) || (key == '0') || (key == '.')) break;
+
+		if ((key == '/') || (key == '4') || (key == '6') ||
+		    (key == ARROW_LEFT) || (key == ARROW_RIGHT)) { equip = !equip; cursor = -1; continue; }
+		if ((inv_dir(key) == 8) && (cursor >= 0))
+		{
+			item = inv_step(equip, cursor, -1);
+			cursor = (item < 0) ? inv_step(equip, inv_end(equip), -1) : item;
+			continue;
+		}
+		if ((inv_dir(key) == 2) && (cursor >= 0))
+		{
+			item = inv_step(equip, cursor, 1);
+			cursor = (item < 0) ? inv_step(equip, inv_first(equip) - 1, 1) : item;
+			continue;
+		}
+
+		/* Enter / Space / click: menu of all actions for the cursor item */
+		if ((key == '\r') || (key == '\n') || (key == ' ') || (key == '5'))
+		{
+			if (cursor < 0) continue;
+			item = cursor;
+			act = inv_context_menu(item, show_obj_row + item - inv_first(equip), show_obj_col);
+			if (act < 0) continue;
+		}
+
+		/* Number pad: + main action, - drop, * examine (cursor item) */
+		else if ((key == '+') || (key == '-') || (key == '*'))
+		{
+			item = cursor;
+			if (inv_used(equip, item))
+				act = (key == '+') ? inv_main_act(item) :
+				      (key == '-') ? ACTION_DROP : ACTION_EXAMINE;
+		}
+
+		/* letter: main action, Shift+letter: drop, Ctrl+letter: examine */
+		else if ((key >= 'a') && (key <= 'z'))
+		{
+			item = inv_first(equip) + key - 'a';
+			if (inv_used(equip, item)) act = inv_main_act(item);
+		}
+		else if ((key >= 'A') && (key <= 'Z'))
+		{
+			item = inv_first(equip) + key - 'A';
+			if (inv_used(equip, item)) act = ACTION_DROP;
+		}
+		else if ((key >= 1) && (key <= 26))
+		{
+			item = inv_first(equip) + key - 1;
+			if (inv_used(equip, item)) act = ACTION_EXAMINE;
+		}
+
+		/* Anything else is a normal command, as in the old screen */
+		else
+		{
+			p_ptr->command_new = key;
+			break;
+		}
+
+		if (act < 0) { bell("Illegal object choice!"); continue; }
+
+		screen_load();
+		inv_run(act, item, equip);
+		return;
+	}
+
+	screen_load();
+}

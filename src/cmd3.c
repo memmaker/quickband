@@ -24,39 +24,7 @@
  */
 void do_cmd_inven(void)
 {
-	/* Hack -- Start in "inventory" mode */
-	p_ptr->command_wrk = (USE_INVEN);
-
-	/* Save screen */
-	screen_save();
-
-	/* Hack -- show empty slots */
-	item_tester_full = TRUE;
-
-	/* Display the inventory */
-	show_inven(OLIST_WEIGHT | OLIST_QUIVER);
-
-	/* Hack -- hide empty slots */
-	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt(format("(Inventory) Burden %d.%dlb (%d%% capacity). Command: ",
-	    p_ptr->total_weight / 10, p_ptr->total_weight % 10,
-	    (10 * p_ptr->total_weight) / (6 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]])), 0, 0);
-
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
-
-	/* Load screen */
-	screen_load();
-
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
+	textui_inven_screen(FALSE);
 }
 
 
@@ -65,36 +33,7 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
-	/* Hack -- Start in "equipment" mode */
-	p_ptr->command_wrk = (USE_EQUIP);
-
-	/* Save screen */
-	screen_save();
-
-	/* Hack -- show empty slots */
-	item_tester_full = TRUE;
-
-	/* Display the equipment */
-	show_equip(OLIST_WEIGHT);
-
-	/* Hack -- undo the hack above */
-	item_tester_full = FALSE;
-
-	/* Prompt for a command */
-	prt("(Equipment) Command: ", 0, 0);
-
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
-
-	/* Load screen */
-	screen_load();
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
+	textui_inven_screen(TRUE);
 }
 
 static int quiver_wield(int item, object_type *o_ptr)

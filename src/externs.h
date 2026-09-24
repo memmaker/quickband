@@ -478,6 +478,11 @@ extern void textui_cmd_suicide(void);
 
 /* cmd3.c */
 extern void do_cmd_inven(void);
+extern int inven_reopen;
+extern bool inven_may_reopen(void);
+extern void textui_inven_screen(bool equip);
+extern object_type *show_obj_cursor, *show_obj_objs[50];
+extern int show_obj_row, show_obj_col, show_obj_rows;
 extern void do_cmd_equip(void);
 extern void wield_in_quiver(object_type *o_ptr, int slot);
 extern void wield_item(object_type *o_ptr, int item, int slot);

@@ -658,6 +658,19 @@ void cmd_init(void)
 void textui_process_command(bool no_request)
 {
 
+	/* Show the inventory / equipment again after an action taken there */
+	if (!no_request && inven_reopen)
+	{
+		bool equip = (inven_reopen == 2);
+
+		inven_reopen = 0;
+		if (inven_may_reopen() && !p_ptr->command_new)
+		{
+			textui_inven_screen(equip);
+			return;
+		}
+	}
+
 	if (!no_request)
 		request_command();
 

@@ -24,6 +24,14 @@
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
+/*
+ * Object to highlight in the next main-window list (NULL: none), and where
+ * the last one was drawn: position, rows, and the object on each row
+ */
+object_type *show_obj_cursor = NULL;
+int show_obj_row = 1, show_obj_col = 0, show_obj_rows = 0;
+object_type *show_obj_objs[50];
+
 static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
@@ -85,8 +93,14 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Clear the line */
 		prt("", row + i, MAX(col - 2, 0));
 
-		/* Print the label */
-		put_str(labels[i], row + i, col);
+		/* Print the label (the cursor line is marked) */
+		if (!in_term) show_obj_objs[i] = o_ptr;
+		if (!in_term && o_ptr && (o_ptr == show_obj_cursor))
+		{
+			c_put_str(TERM_L_BLUE, ">", row + i, MAX(col - 2, 0));
+			c_put_str(TERM_L_BLUE, labels[i], row + i, col);
+		}
+		else put_str(labels[i], row + i, col);
 
 		/* Print the object */
 		if (o_ptr != NULL)
@@ -164,6 +178,13 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 					count == 1 ? "" : "s");
 			c_put_str(TERM_L_UMBER, tmp_val, row + i, col + 3);
 		}
+	}
+
+	if (!in_term)
+	{
+		show_obj_row = row;
+		show_obj_col = col;
+		show_obj_rows = i;
 	}
 
 	/* Clear term windows */
@@ -782,6 +803,29 @@ static int get_tag(int *cp, char tag)
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
+/* Item index of position pos in a get_item() list */
+static int get_item_idx(int wrk, int pos, const int *floor_list)
+{
+	return ((wrk == USE_FLOOR) ? 0 - floor_list[pos] : pos);
+}
+
+/* Next acceptable position after pos in steps of dir (pos -1/999: from the start/end), or -1 */
+static int get_item_step(int wrk, int pos, int dir, const int *floor_list, int floor_num)
+{
+	int lo = 0, hi = floor_num - 1;
+
+	if (wrk == USE_INVEN) { lo = 0; hi = INVEN_PACK - 1; }
+	else if (wrk == USE_EQUIP) { lo = INVEN_WIELD; hi = ALL_INVEN_TOTAL - 1; }
+
+	if (pos < lo - 1) pos = lo - 1;
+	if (pos > hi + 1) pos = hi + 1;
+
+	for (pos += dir; (pos >= lo) && (pos <= hi); pos += dir)
+		if (get_item_okay(get_item_idx(wrk, pos, floor_list))) return (pos);
+
+	return (-1);
+}
+
 bool get_item(int *cp, cptr pmt, cptr str, int mode)
 {
 	int py = p_ptr->py;
@@ -819,7 +863,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-	bool show_list = auto_display_lists ? TRUE : FALSE;
+	/* RVIP: the list is always shown and has a cursor (see get_item_step) */
+	bool show_list = TRUE;
+	int cur = -1, cur_wrk = -1;
+	bool cursor_key;
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -915,11 +962,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 
 	/* Start out in "display" mode */
-	if (auto_display_lists)
-	{
-		/* Save screen */
-		screen_save();
-	}
+	screen_save();
 
 	/* Repeat until done */
 	while (!done)
@@ -956,6 +999,15 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 		/* Redraw windows */
 		handle_stuff();
+
+		/* Put the cursor on the first choice of a new list */
+		if (cur_wrk != p_ptr->command_wrk)
+		{
+			cur_wrk = p_ptr->command_wrk;
+			cur = get_item_step(cur_wrk, -1, 1, floor_list, floor_num);
+		}
+		show_obj_cursor = (cur < 0) ? NULL :
+			object_from_item_idx(get_item_idx(cur_wrk, cur, floor_list));
 
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == USE_INVEN)
@@ -1094,10 +1146,91 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 		/* Show the prompt */
 		prt(tmp_val, 0, 0);
+		show_obj_cursor = NULL;
+
+		/* Key legend under the list */
+		j = MAX(MIN(show_obj_col - 2, Term->wid - 64), 0);
+		k = MIN(show_obj_row + show_obj_rows + 1, Term->hgt - 1);
+		c_prt(TERM_L_UMBER, " 8/2 or Up/Down + 5/Enter: choose, 4/6: other list, 0: cancel", k, j);
 
 
 		/* Get a key */
 		which = inkey_ex();
+
+		/* A click picks the item on that row */
+		if (which.type == EVT_MOUSE)
+		{
+			j = which.mousey - show_obj_row;
+			which.key = ESCAPE;
+			if ((j >= 0) && (j < show_obj_rows) && show_obj_objs[j] &&
+			    (which.mousex >= show_obj_col - 2))
+			{
+				for (k = get_item_step(cur_wrk, -1, 1, floor_list, floor_num); k >= 0;
+				     k = get_item_step(cur_wrk, k, 1, floor_list, floor_num))
+					if (object_from_item_idx(get_item_idx(cur_wrk, k, floor_list)) == show_obj_objs[j])
+						cur = k;
+				which.key = '5';
+			}
+		}
+
+		/* Cursor keys (arrows and number pad) */
+		cursor_key = TRUE;
+		switch (which.key)
+		{
+			/* 1/3/7/9 pick an item inscribed @1 etc., else they move too */
+			case '1': case '3': case '7': case '9':
+				if (get_tag(&k, which.key)) { cursor_key = FALSE; break; }
+				/* Fall through */
+
+			case ARROW_UP: case '8': case ARROW_DOWN: case '2':
+			{
+				k = ((which.key == ARROW_UP) || (which.key == '8') ||
+				     (which.key == '7') || (which.key == '9')) ? -1 : 1;
+				j = get_item_step(cur_wrk, cur, k, floor_list, floor_num);
+				if (j < 0) j = get_item_step(cur_wrk, (k < 0) ? 999 : -1, k, floor_list, floor_num);
+				if (j >= 0) cur = j;
+				break;
+			}
+
+			/* Other list: inventory -> equipment -> floor */
+			case ARROW_LEFT: case '4': case ARROW_RIGHT: case '6':
+			{
+				int lists[3], n = 0;
+
+				if (allow_inven) lists[n++] = USE_INVEN;
+				if (allow_equip) lists[n++] = USE_EQUIP;
+				if (allow_floor) lists[n++] = USE_FLOOR;
+				for (j = 0; (j < n) && (lists[j] != p_ptr->command_wrk); j++) ;
+				k = ((which.key == ARROW_LEFT) || (which.key == '4')) ? n - 1 : 1;
+				if (n > 1) p_ptr->command_wrk = lists[(j + k) % n];
+				screen_load();
+				screen_save();
+				break;
+			}
+
+			case '5': case '\n': case '\r': case ' ':
+			{
+				if (cur < 0) { bell("Nothing to choose!"); break; }
+				k = get_item_idx(cur_wrk, cur, floor_list);
+				if (get_item_allow(k, is_harmless))
+				{
+					(*cp) = k;
+					item = TRUE;
+				}
+				done = TRUE;
+				break;
+			}
+
+			case '0': case '.':
+			{
+				if ((which.key == '0') && get_tag(&k, '0')) { cursor_key = FALSE; break; }
+				done = TRUE;
+				break;
+			}
+
+			default: cursor_key = FALSE;
+		}
+		if (cursor_key) continue;
 
 		/* Parse it */
 		switch (which.key)
@@ -1414,6 +1547,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		show_list = FALSE;
 	}
 
+
+	show_obj_cursor = NULL;
 
 	/* Kill buttons */
 	button_kill('*');
