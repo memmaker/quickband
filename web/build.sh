@@ -26,7 +26,7 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	-sFORCE_FILESYSTEM -lidbfs.js -sENVIRONMENT=web \
 	--preload-file web/stage/lib@/quickband/lib
 
-cp web/index.html web/rvip-wm.js web/quickband.js "$OUT/"
+cp web/index.html "$HOME/Games/rvip-tools/web/rvip-wm.js" web/quickband.js "$OUT/"
 # Sound effects and town music are fetched by the page, not preloaded
 cp -R lib/xtra/sound "$OUT/sound"
 mkdir -p "$OUT/music" && cp web/music/new_town.ogg "$OUT/music/"
