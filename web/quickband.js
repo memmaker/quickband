@@ -6,7 +6,7 @@
 	'use strict';
 
 	var TILE = 32;                 /* source tile size in 32x32.png */
-		var PERSIST = ['/lib/save', '/lib/user', '/lib/apex', '/lib/bone'];
+		var PERSIST = ['/quickband/lib/save', '/quickband/lib/user', '/quickband/lib/apex', '/quickband/lib/bone'];
 
 	/* Term 0 main; the rest as in lib/pref/user-x11.prf */
 	var TERMS = [
@@ -61,7 +61,7 @@
 	var MIN_W = 90, MIN_H = 64, MAIN_MIN_W = 240, MAIN_MIN_H = 160;
 	var TILE_STEPS = [16, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64];
 	var FONT_MIN = 8, FONT_MAX = 28;
-	var LAYOUT_FILE = '/lib/user/web-layout.json';
+	var LAYOUT_FILE = '/quickband/lib/user/web-layout.json';
 	var SPLITS = ['side', 'bottom', 'inv', 'mon', 'msg'];
 
 	var L = null;             /* persisted layout state */
@@ -111,12 +111,14 @@
 				Object.keys(d.font).forEach(function (k) {
 					if (s.font && s.font[k] >= FONT_MIN && s.font[k] <= FONT_MAX) d.font[k] = s.font[k];
 				});
+				if (s.audio) d.audio = { sound: s.audio.sound === true, music: s.audio.music === true };
 				if (s.titles) Object.keys(s.titles).forEach(function (k) {
 					if (typeof s.titles[k] === 'string' && d.font[k]) d.titles[k] = s.titles[k].slice(0, 60);
 				});
 			}
 		} catch (err) { /* no layout saved yet */ }
 		L = d;
+		if (L.audio) { audio.sound = !!L.audio.sound; audio.music = !!L.audio.music; renderAudio(); }
 	}
 
 	var saveTimer = 0;
@@ -342,7 +344,7 @@
 	}
 
 	function resetLayout() {
-		L = defaultLayout();
+		L = Object.assign(defaultLayout(), { audio: L.audio });
 		renderTitles();
 		scheduleLayout();
 		saveLayout();
@@ -408,10 +410,6 @@
 	var audio = { sound: false, music: false, cfg: {}, cache: {}, depth: -1,
 		song: new Audio('music/new_town.ogg') };
 	audio.song.loop = true;
-	try {
-		audio.sound = localStorage.getItem('qb-sound') === '1';
-		audio.music = localStorage.getItem('qb-music') === '1';
-	} catch (e) { }
 	fetch('sound/sound.cfg').then(function (r) { return r.text(); }).then(function (t) {
 		t.split('\n').forEach(function (l) {
 			var m = /^(\w+)\s*=\s*(.+)$/.exec(l.trim());
@@ -426,7 +424,8 @@
 
 	function toggleAudio(kind) {
 		audio[kind] = !audio[kind];
-		try { localStorage.setItem('qb-' + kind, audio[kind] ? '1' : '0'); } catch (e) { }
+		L.audio = { sound: audio.sound, music: audio.music };
+		saveLayout();
 		renderAudio();
 		updateMusic();
 	}
@@ -714,13 +713,13 @@
 
 	function removeSaves() {
 		listFiles().forEach(function (p) {
-			if (p.indexOf('/lib/save/') === 0) Module.FS.unlink(p);
+			if (p.indexOf('/quickband/lib/save/') === 0) Module.FS.unlink(p);
 		});
 	}
 
 	function saveFilePath() {
 		var files = listFiles().filter(function (p) {
-			return p.indexOf('/lib/save/') === 0 && !/\.(new|old)$/.test(p);
+			return p.indexOf('/quickband/lib/save/') === 0 && !/\.(new|old)$/.test(p);
 		});
 		return files[0];
 	}
@@ -746,7 +745,7 @@
 			if (!confirm('Replace the current saved game with "' + file.name + '"?')) return;
 			running = false;
 			removeSaves();
-			Module.FS.writeFile('/lib/save/' + SAVE_NAME, new Uint8Array(r.result));
+			Module.FS.writeFile('/quickband/lib/save/' + SAVE_NAME, new Uint8Array(r.result));
 			syncFiles(function (err) { if (!err) location.reload(); });
 		};
 		r.readAsArrayBuffer(file);
@@ -793,6 +792,8 @@
 				Module.addRunDependency('tiles');
 				tilesWait = true;
 			}
+			/* Own paths: IndexedDB names come from the mount points, shared per origin */
+			Module.FS.mkdirTree('/quickband'); Module.FS.chdir('/quickband');
 			mountPersistent();
 		}],
 		/* Terms must exist before main() runs (it asks for their sizes) */

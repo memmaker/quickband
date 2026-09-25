@@ -3,3 +3,6 @@
 /nppangband
 /src/nppangband
 /web/dist/
+
+# RVIP port: build output, binaries, local saves
+web/dist/

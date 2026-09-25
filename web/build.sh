@@ -24,7 +24,7 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	-sEXPORTED_FUNCTIONS=_main,_web_request_save \
 	-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,HEAPU8,addRunDependency,removeRunDependency \
 	-sFORCE_FILESYSTEM -lidbfs.js -sENVIRONMENT=web \
-	--preload-file web/stage/lib@/lib
+	--preload-file web/stage/lib@/quickband/lib
 
 cp web/index.html web/quickband.js "$OUT/"
 # Sound effects and town music are fetched by the page, not preloaded
