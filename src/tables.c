@@ -1884,7 +1884,7 @@ option_entry options[OPT_MAX] =
 	{"center_player",		"Center map continuously (very slow)",	FALSE},	/* OPT_center_player */
 	{NULL,				NULL,								FALSE},/* xxx */
 	{"xchars_to_file",		"Allow accents in output files",		FALSE},	/* OPT_xchars_to_file */
-	{"auto_more",			"Automatically clear '-more-' prompts",	FALSE},	/* OPT_auto_more */
+	{"auto_more",			"Automatically clear '-more-' prompts",	TRUE},	/* OPT_auto_more */
 	{NULL,				NULL,								FALSE},/* xxx */
 	{"auto_display_lists",	"Automatically display drop-down lists",TRUE},	/* OPT_auto_display_lists */
 	{"hp_changes_color",	"Player color indicates low hit points",TRUE},	/* OPT_hp_changes_color*/
