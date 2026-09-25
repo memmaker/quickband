@@ -1,4 +1,4 @@
-# macOS / XQuartz build (see ~/Games/RVIP.md)
+# macOS / XQuartz build (see ~/Games/rvip-tools/RVIP.md)
 SYS_gcu =
 SYS_sdl =
 CC = cc
