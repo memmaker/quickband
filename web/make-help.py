@@ -84,4 +84,10 @@ parts.append(section('guide', "New player's guide",
                      ''.join(f'<h3>{esc(t)}</h3>{b}' for t, b in guide.items())))
 parts.append(section('web', 'Playing in the browser', WEB))
 
+# RVIP: About this version (rogue2wasm.md: Source and changes)
+parts.append('<h2 id="h-version">About this version</h2><ul>'
+             '<li>Based on <strong>Quickband 2.0.6</strong>.</li>'
+             '<li>Original source: <a href="https://github.com/memmaker/quickband/tree/7ff30f1" target="_blank" rel="noopener">untouched import, commit 7ff30f1 (taken from NickMcConnell/AngbandPlus; the exact upstream commit was not recorded)</a></li>'
+             '<li>Our changes (port, auto-explore, command menu, web build): '
+             '<a href="https://github.com/memmaker/quickband/compare/7ff30f1...main" target="_blank" rel="noopener">memmaker/quickband</a></li></ul>')
 print('\n'.join(parts))
