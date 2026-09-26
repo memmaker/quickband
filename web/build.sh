@@ -16,6 +16,7 @@ cp lib/xtra/graf/32x32.png "$OUT/"
 SRCS=$(tr -d '\r' < src/Makefile.src | sed -n '/^ANGFILES/,/^$/p;/^ZFILES/,/^MAINFILES/p' \
 	| grep -o '[a-z0-9_-]*\.o' | grep -v '^main' | sed 's/\.o$/.c/;s|^|src/|' | sort -u)
 
+mkdir -p web/stage/lib/xtra/sound && cp lib/xtra/sound/sound.cfg web/stage/lib/xtra/sound/sound.cfg
 emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc -w \
 	$SRCS src/main.c src/main-web.c \
 	-o "$OUT/quickband-core.js" \
