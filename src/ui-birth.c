@@ -738,20 +738,18 @@ static enum birth_stage point_based_command(void)
  * ------------------------------------------------------------------------ */
 static enum birth_stage get_name_command(void)
 {
-	enum birth_stage next;
 	char name[32];
 
-	if (get_name(name, sizeof(name)))
+	/* A new character must be named */
+	while (get_name(name, sizeof(name)))
 	{
+		if (!name[0]) continue;
+
 		cmd_insert(CMD_NAME_CHOICE, name);
-		next = BIRTH_FINAL_CONFIRM;
-	}
-	else
-	{
-		next = BIRTH_BACK;
+		return BIRTH_FINAL_CONFIRM;
 	}
 
-	return next;
+	return BIRTH_BACK;
 }
 
 /* ------------------------------------------------------------------------
