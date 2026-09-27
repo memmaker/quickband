@@ -974,6 +974,12 @@ bool explore_step(void)
 	int head = 0, tail = 0, y, x, d, i;
 	bool found = FALSE;
 
+#ifdef USE_WEB
+	/* Paint every step: show the last one, then wait 40 ms */
+	Term_fresh();
+	Term_xtra(TERM_XTRA_DELAY, 40);
+#endif
+
 	auto_explore = FALSE;
 
 	/* Arrived at the stairs: stop; the player presses the key again to take them */
