@@ -73,6 +73,11 @@ EM_JS(void, js_color, (int i, int r, int g, int b), {
 	Module.qb.color(i, r, g, b);
 });
 
+/* The page's Tiles choice: 1 tiles, 0 none (text) */
+EM_JS(int, js_tiles_wanted, (void), {
+	return Module.qb.tilesWanted();
+});
+
 EM_JS(int, js_term_cols, (int t), {
 	return Module.qb.termCols(t);
 });
@@ -211,6 +216,21 @@ static bool web_apply_layout(void)
 }
 
 
+/* Tiles button: the new choice, applied at the next command prompt */
+static int web_want_tiles = -1;
+
+EMSCRIPTEN_KEEPALIVE void web_set_tiles(int on)
+{
+	web_want_tiles = on ? 1 : 0;
+}
+
+/* UT32 tiles in big-tile mode, or plain text */
+static void web_graphics(bool on)
+{
+	use_graphics = arg_graphics = on ? GRAPHICS_DAVID_GERVAIS : GRAPHICS_NONE;
+	use_bigtile = on;
+}
+
 /* Move queued browser input into the main term's key queue */
 static int web_pump(void)
 {
@@ -228,6 +248,20 @@ static int web_pump(void)
 		else
 			Term_keypress(k);
 		got = 1;
+	}
+
+	/* Tiles on/off: only at the command prompt, then redraw everything */
+	if (web_want_tiles >= 0 && inkey_flag && character_generated && !got)
+	{
+		bool on = (web_want_tiles == 1);
+
+		web_want_tiles = -1;
+		if (on != (use_graphics != GRAPHICS_NONE))
+		{
+			web_graphics(on);
+			reset_visuals(TRUE);
+			do_cmd_redraw();
+		}
 	}
 
 	/* Safe autosave: only while waiting for a command */
@@ -404,9 +438,7 @@ errr init_web(int argc, char **argv)
 	(void)argv;
 
 	/* UT32 tiles in big-tile mode, as in the X11 build (-g -b) */
-	use_graphics = GRAPHICS_DAVID_GERVAIS;
-	arg_graphics = GRAPHICS_DAVID_GERVAIS;
-	use_bigtile = TRUE;
+	web_graphics(js_tiles_wanted() != 0);
 	ANGBAND_GRAF = "david";
 
 	/*

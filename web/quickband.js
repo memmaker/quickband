@@ -94,7 +94,7 @@
 		var f = {};
 		TERMS.forEach(function (d, i) { if (i) f[d.id] = font; });
 		/* auto*: still following the window size (not customised yet) */
-		return { v: 1, tile: tile, font: f, titles: {}, autoSplit: true, autoTile: true,
+		return { v: 1, tile: tile, tiles: true, font: f, titles: {}, autoSplit: true, autoTile: true,
 			split: { side: (W - sideW) / W, bottom: (H - botH) / H, inv: 0.46, mon: 0.73, msg: 0.6 } };
 	}
 
@@ -107,6 +107,7 @@
 					if (typeof s.split[k] === 'number' && s.split[k] > 0 && s.split[k] < 1) d.split[k] = s.split[k];
 				});
 				if (TILE_STEPS.indexOf(s.tile) >= 0) d.tile = s.tile;
+				d.tiles = s.tiles !== false;
 				d.autoSplit = s.autoSplit === true;
 				d.autoTile = s.autoTile === true;
 				if (d.autoSplit || d.autoTile) followWindow(d);
@@ -121,6 +122,7 @@
 			}
 		} catch (err) { /* no layout saved yet */ }
 		L = d;
+		if ($('btn-tiles')) showTiles();
 		if (L.audio) { audio.sound = !!L.audio.sound; audio.music = !!L.audio.music; renderAudio(); }
 	}
 
@@ -296,7 +298,7 @@
 	}
 
 	function resetLayout() {
-		L = Object.assign(defaultLayout(), { audio: L.audio, wm: wm.state() });
+		L = Object.assign(defaultLayout(), { tiles: L.tiles, audio: L.audio, wm: wm.state() });
 		scheduleLayout();
 		saveLayout();
 	}
@@ -352,8 +354,11 @@
 		return palette[a] || palette[a & 0x0F] || '#fff';
 	}
 
+	/* Text-mode map glyphs from font-x11.prf (the X11 font's own symbols) */
+	var XGLYPH = { 7: '\u00b7', 11: ':', 12: '*', 127: '\u2588' };
 	function glyph(b) {
-		if (b < 32 || b === 127) return ' ';
+		if (XGLYPH[b]) return XGLYPH[b];
+		if (b < 32) return ' ';
 		return String.fromCharCode(b);
 	}
 
@@ -411,6 +416,9 @@
 
 		mouseX: 0, mouseY: 0, mouseB: 0,
 
+		/* Tiles button: asked by the game at startup */
+		tilesWanted: function () { return (L && L.tiles === false) ? 0 : 1; },
+
 		termCols: function (t) { return terms[t].cols; },
 		termRows: function (t) { return terms[t].rows; },
 
@@ -450,7 +458,8 @@
 			var cy = y * T.ch + T.ch / 2 + 1;
 			for (var i = 0; i < n; i++) {
 				var ch = H[s + i];
-				if (ch > 32) c.fillText(glyph(ch), (x + i) * T.cw + T.cw / 2, cy);
+				if (ch === 127) c.fillRect((x + i) * T.cw, y * T.ch, T.cw, T.ch);
+				else if (ch > 32 || XGLYPH[ch]) c.fillText(glyph(ch), (x + i) * T.cw + T.cw / 2, cy);
 			}
 		},
 
@@ -470,9 +479,10 @@
 				if (!(a & 0x80) || !(k & 0x80) || !tilesReady) {
 					c.fillStyle = '#000';
 					c.fillRect(px, py, T.cw, h);
-					if (k > 32) {
+					if (k > 32 || XGLYPH[k]) {
 						c.fillStyle = color(a & 0x7F);
-						c.fillText(glyph(k), px + T.cw / 2, py + h / 2 + 1);
+						if (k === 127) c.fillRect(px, py, T.cw, h);
+						else c.fillText(glyph(k), px + T.cw / 2, py + h / 2 + 1);
 					}
 					continue;
 				}
@@ -739,6 +749,22 @@
 		if (!h.hidden) $('help-body').focus();
 	}
 
+	/* Tiles button: UT32 -> None -> UT32; the game switches at its next prompt */
+	function showTiles() {
+		$('btn-tiles').textContent = 'Tiles: ' + ((L && L.tiles === false) ? 'None' : 'UT32');
+	}
+	function cycleTiles() {
+		if (!L) return;
+		L.tiles = (L.tiles === false);
+		tilesReady = tilesOk && L.tiles;
+		showTiles();
+		saveLayout();
+		if (running && Module._web_set_tiles) Module._web_set_tiles(L.tiles ? 1 : 0);
+		status(L.tiles ? 'Map: UT32 tiles' : 'Map: text');
+		setTimeout(function () { status(''); }, 1200);
+		$('btn-tiles').blur();
+	}
+
 	/* uid 0 in Emscripten; see process_player_name() */
 	var SAVE_NAME = '0.PLAYER';
 
@@ -777,8 +803,11 @@
 
 	/* Tile sheet; main() waits for it */
 	var tilesDone = false, tilesWait = false;
+	var tilesOk = false;
 	function tilesFinished(ok) {
-		tilesReady = ok;
+		tilesOk = ok;
+		/* A sheet that loads late must not turn tiles back on after None */
+		tilesReady = ok && !(L && L.tiles === false);
 		tilesDone = true;
 		if (!ok) status('Could not load the tile set; using text.', true);
 		if (tilesWait) Module.removeRunDependency('tiles');
@@ -797,6 +826,7 @@
 		$('import-file').onchange = function () { if (this.files[0]) importSave(this.files[0]); this.value = ''; };
 		$('btn-new').onclick = newGame;
 		$('btn-help').onclick = toggleHelp;
+		$('btn-tiles').onclick = cycleTiles;
 		$('help-close').onclick = toggleHelp;
 		$('chk-sound').onchange = function () { toggleAudio('sound'); };
 		$('chk-music').onchange = function () { toggleAudio('music'); };
