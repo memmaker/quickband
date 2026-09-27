@@ -777,7 +777,7 @@
 	mapSel.addEventListener('pointerdown', function (e) { e.stopPropagation(); });   /* not a window drag */
 	mapSel.addEventListener('mousedown', function (e) { e.stopPropagation(); });
 	function renderMapSel() {
-		var bs = document.querySelector('#t-main .t .zoom') || document.querySelector('#t-main .t');
+		var bs = document.querySelector('#t-main .wm-btns');
 		if (bs && mapSel.parentNode !== bs) bs.insertBefore(mapSel, bs.firstChild);
 		mapSel.hidden = !!(L && L.tiles !== false);
 		mapSel.value = (L && L.mapFace) || '';
