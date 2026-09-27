@@ -166,14 +166,14 @@
 			wins: [{ id: 'main', title: 'Map' }, { id: 'inv', title: 'Inventory' }, { id: 'msg', title: 'Messages' }, { id: 'mon', title: 'Visible monsters' }, { id: 'rec', title: 'Recall' }, { id: 'itm', title: 'Visible items' }, { id: 'eqp', title: 'Equipment' }],
 			multi: { d: 'v', r: s.bottom, a: { d: 'h', r: s.side, a: 'main', b: { d: 'v', r: s.inv, a: 'inv', b: { d: 'v', r: (s.mon - s.inv) / (1 - s.inv), a: 'mon', b: 'itm' } } }, b: 'msg' },
 			single: 'main',
-			state: L.wm, noFont: 'main',
+			state: L.wm,
 			save: function (st) { L.wm = st; saveLayout(); },
 			layout: function (r) {
 				rects = r;
 				TERMS.forEach(function (d, i) { if (terms[i]) fitCanvas(i); });
 				scheduleSoon();
 			},
-			font: function (id, d) { zoomSub(id, d); },
+			font: function (id, d) { if (id === 'main') zoomMain(d); else zoomSub(id, d); },   /* map: A-/A+ on its title bar */
 			onReset: resetLayout
 		});
 		wm.apply();
