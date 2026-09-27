@@ -387,8 +387,8 @@
 	}
 
 	function renderAudio() {
-		$('btn-sound').textContent = 'Sound: ' + (audio.sound ? 'on' : 'off');
-		$('btn-music').textContent = 'Music: ' + (audio.music ? 'on' : 'off');
+		$('chk-sound').checked = !!audio.sound;
+		$('chk-music').checked = !!audio.music;
 	}
 
 	var qb = {
@@ -798,10 +798,10 @@
 		$('btn-new').onclick = newGame;
 		$('btn-help').onclick = toggleHelp;
 		$('help-close').onclick = toggleHelp;
-		$('btn-zoom-in').onclick = function () { zoomMain(1); };
-		$('btn-zoom-out').onclick = function () { zoomMain(-1); };
-		$('btn-sound').onclick = function () { toggleAudio('sound'); };
-		$('btn-music').onclick = function () { toggleAudio('music'); };
+		$('chk-sound').onchange = function () { toggleAudio('sound'); };
+		$('chk-music').onchange = function () { toggleAudio('music'); };
+		RvipWM.dropdown($('btn-audio'), $('menu-audio'));
+		RvipWM.dropdown($('btn-file'), $('menu-file'));
 		renderAudio();
 
 		/* Buttons never take the keyboard focus away from the game */
