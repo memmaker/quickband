@@ -901,7 +901,7 @@ void run_step(int dir)
 
 /*
  * Auto-explore ('H'): walk towards the nearest unexplored grid, one step per
- * turn.  '<' / '>' reuse it to walk to the nearest known staircase and take it.
+ * turn.  '<' / '>' reuse it to walk to the nearest known staircase (and stop).
  * Stops on disturb() (monster appears, damage, keypress, ...), when a monster
  * is in view, or when nothing reachable is left.  Never picks locks: it stops
  * at a locked door and skips that door the next time.
@@ -965,12 +965,6 @@ static bool explore_is_stairs(int y, int x, int stairs)
 	return ((stairs > 0) ? cave_up_stairs(y, x) : cave_down_stairs(y, x));
 }
 
-static void explore_take_stairs(int stairs)
-{
-	if (stairs > 0) do_cmd_go_up(CMD_GO_UP, NULL);
-	else do_cmd_go_down(CMD_GO_DOWN, NULL);
-}
-
 /* Returns FALSE (and stops) when there is nothing to do */
 bool explore_step(void)
 {
@@ -982,13 +976,10 @@ bool explore_step(void)
 
 	auto_explore = FALSE;
 
-	/* Arrived at the stairs we were heading for: take them */
+	/* Arrived at the stairs: stop; the player presses the key again to take them */
 	if (explore_stairs && explore_is_stairs(p_ptr->py, p_ptr->px, explore_stairs))
 	{
-		int stairs = explore_stairs;
-
 		explore_stairs = 0;
-		explore_take_stairs(stairs);
 		return (FALSE);
 	}
 

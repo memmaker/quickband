@@ -113,7 +113,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	/* Verify stairs */
 	if (!cave_up_stairs(p_ptr->py, p_ptr->px))
 	{
-		/* Walk to the nearest known up staircase, then take it */
+		/* Walk to the nearest known up staircase (and stop there) */
 		explore_to_stairs(TRUE);
 
 		return;
@@ -206,7 +206,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	/* Verify stairs */
 	if (!cave_down_stairs(p_ptr->py, p_ptr->px))
 	{
-		/* Walk to the nearest known down staircase, then take it */
+		/* Walk to the nearest known down staircase (and stop there) */
 		explore_to_stairs(FALSE);
 		return;
 	}
