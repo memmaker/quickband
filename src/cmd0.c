@@ -87,8 +87,6 @@ static command_type cmd_action[] =
 	{ "Bash a door open",           'B', CMD_NULL, textui_cmd_bash },
 	{ "Make a monster trap",		'O', CMD_NULL, textui_cmd_make_trap},
 	{ "Steal from a monster",		'P', CMD_NULL, textui_cmd_steal},
-	{ "Walk",                     ';', CMD_NULL, textui_cmd_walk },
-	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
 	{ "Stand still",              ',', CMD_HOLD, NULL },
 	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
 	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
@@ -168,6 +166,9 @@ static command_type cmd_util[] =
 /* Commands that shouldn't be shown to the user */
 static command_type cmd_hidden[] =
 {
+	/* Moves: keys only, not in the Enter menu */
+	{ "Walk",                     ';', CMD_NULL, textui_cmd_walk },
+	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
 	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
 	{ "Mouse click",      DEFINED_XFF, CMD_NULL, do_cmd_mouseclick },
 	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
