@@ -1650,7 +1650,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 					/* Get "the monster" or "it" */
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
-					message_format(MSG_MISS, 0, "%^s dodges!", m_name);
+					message_format(MSG_GENERIC, 0, "%^s dodges!", m_name);
 
 					/* Learn that monster can dodge */
 					l_ptr->r_l_flags2 |= (RF2_EVASIVE);
@@ -2608,7 +2608,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 					/* Get "the monster" or "it" */
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
-					message_format(MSG_MISS, 0, "%^s dodges!", m_name);
+					message_format(MSG_GENERIC, 0, "%^s dodges!", m_name);
 
 					/* Learn that monster can dodge */
 					l_ptr->r_l_flags2 |= (RF2_EVASIVE);
