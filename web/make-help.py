@@ -35,7 +35,7 @@ SAVING = '''<ul>
 WEB = '''<ul>
 <li><strong>Windows:</strong> the map fills the big window; Inventory, Visible monsters and Visible items are on the right; Messages and Recall along the bottom.</li>
 <li><strong>Resize windows</strong> by dragging the gaps between them. The windows always fill the screen and never overlap; the game redraws them at their new size. <em>Reset windows</em> puts everything back.</li>
-<li><strong>Zoom:</strong> <em>Zoom −</em> / <em>Zoom +</em> in the top bar change the size of the map tiles. Hover over a small window's title to show its <em>A−</em> / <em>A+</em> buttons, which change its text size.</li>
+<li><strong>Zoom:</strong> <em>A−</em> / <em>A+</em> on the Map title bar (shown on hover) change the size of the map tiles. Hover over a small window's title to show its <em>A−</em> / <em>A+</em> buttons, which change its text size.</li>
 <li><strong>Rename a window</strong> by clicking its title, typing a new name and pressing <kbd>Enter</kbd> (<kbd>Esc</kbd> cancels, an empty name restores the default).</li>
 <li><strong>Keys:</strong> arrow keys, the numeric keypad or <kbd>1</kbd>–<kbd>9</kbd> move you; <kbd>Shift</kbd> + direction runs. You can also click on the map to walk there.</li>
 <li>Browsers keep a few shortcuts for themselves (<kbd>Ctrl+W</kbd>, <kbd>Ctrl+T</kbd>, <kbd>Ctrl+N</kbd>, and <kbd>Cmd</kbd> shortcuts on a Mac), so those never reach the game.</li>
