@@ -743,7 +743,14 @@ static enum birth_stage get_name_command(void)
 	/* A new character must be named */
 	while (get_name(name, sizeof(name)))
 	{
-		if (!name[0]) continue;
+		/* An empty name (Enter alone) picks a random one, as '*' does;
+		 * re-asking silently looked like a hang. The final confirmation
+		 * shows it, and ESC there steps back to rename. */
+		if (!name[0])
+		{
+			make_random_name(name, 12);
+			name[0] = toupper((unsigned char) name[0]);
+		}
 
 		cmd_insert(CMD_NAME_CHOICE, name);
 		return BIRTH_FINAL_CONFIRM;
