@@ -1489,7 +1489,7 @@ static void update_messages_subwindow(game_event_type type, game_event_data *dat
 	term *old = Term;
 	term *inv_term = user;
 
-	int i;
+	int i, n;
 	int w, h;
 	int x, y;
 
@@ -1501,19 +1501,23 @@ static void update_messages_subwindow(game_event_type type, game_event_data *dat
 	/* Get size */
 	Term_get_size(&w, &h);
 
-	/* Dump messages */
+	/* Dump messages: the newest n fill the window from the top (web: no
+	   empty band above the first message), older ones scroll off */
+	n = MIN(messages_num(), h);
 	for (i = 0; i < h; i++)
 	{
 		byte color = message_color(i);
 		u16b count = message_count(i);
 		const char *str = message_str(i);
 
+		if (i >= n) { Term_erase(0, i, 255); continue; }
+
 		if (count <= 1)
 			msg = str;
 		else
 			msg = format("%s <%dx>", str, count);
 
-		Term_putstr(0, (h - 1) - i, -1, color, msg);
+		Term_putstr(0, (n - 1) - i, -1, color, msg);
 
 
 		/* Cursor */
