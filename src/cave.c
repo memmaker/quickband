@@ -1638,12 +1638,12 @@ void move_cursor_relative(int y, int x)
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 	/* Location in window */
-	vy = ky + ROW_MAP;
+	vy = ky * MAP_VM + ROW_MAP;
 
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_bigtile) vx += kx;
+	vx += kx * (MAP_HM - 1);
 
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);
@@ -1720,6 +1720,23 @@ static void print_rel_map(char c, byte a, int y, int x)
  *
  * The main screen will always be at least 24x80 in size.
  */
+/*
+ * Big tile (web map zoom): the grid covers MAP_HM x MAP_VM cells of the
+ * main term; the other cells are fillers the page skips.
+ */
+static void map_pad(int vx, int vy, byte a)
+{
+	int dx, dy;
+
+	for (dy = 0; dy < MAP_VM; dy++)
+		for (dx = 0; dx < MAP_HM; dx++)
+			if (dx || dy)
+			{
+				if (a & 0x80) Term_queue_char(Term, vx + dx, vy + dy, 255, -1, 0, 0);
+				else Term_queue_char(Term, vx + dx, vy + dy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+			}
+}
+
 void print_rel(char c, byte a, int y, int x)
 {
 	int ky, kx;
@@ -1741,24 +1758,17 @@ void print_rel(char c, byte a, int y, int x)
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 	/* Location in window */
-	vy = ky + ROW_MAP;
+	vy = ky * MAP_VM + ROW_MAP;
 
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_bigtile) vx += kx;
+	vx += kx * (MAP_HM - 1);
 
 	/* Hack -- Queue it */
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
-	if (use_bigtile)
-	{
-		/* Mega-Hack : Queue dummy char */
-		if (a & 0x80)
-			Term_queue_char(Term, vx+1, vy, 255, -1, 0, 0);
-		else
-			Term_queue_char(Term, vx+1, vy, TERM_WHITE, ' ', 0, 0);
-	}
+	if (use_bigtile) map_pad(vx, vy, a);
 }
 
 
@@ -1969,12 +1979,12 @@ void light_spot(int y, int x)
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
 	/* Location in window */
-	vy = ky + ROW_MAP;
+	vy = ky * MAP_VM + ROW_MAP;
 
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_bigtile) vx += kx;
+	vx += kx * (MAP_HM - 1);
 
 	/* Hack -- redraw the grid */
 	map_info(y, x, &a, &c, &ta, &tc);
@@ -1982,16 +1992,7 @@ void light_spot(int y, int x)
 	/* Hack -- Queue it */
 	Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
-	if (use_bigtile)
-	{
-		vx++;
-
-		/* Mega-Hack : Queue dummy char */
-		if (a & 0x80)
-			Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
-		else
-			Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
-	}
+	if (use_bigtile) map_pad(vx, vy, a);
 
 	/* Update the object list */
 	if (cave_m_idx[y][x] > 0) p_ptr->redraw |= PR_MONLIST;
@@ -2091,7 +2092,7 @@ void prt_map(void)
 	tx = Term->offset_x + SCREEN_WID;
 
 	/* Dump the map */
-	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy++, y++)
+	for (y = Term->offset_y, vy = ROW_MAP; y < ty; vy += MAP_VM, y++)
 	{
 		for (x = Term->offset_x, vx = COL_MAP; x < tx; vx++, x++)
 		{
@@ -2106,13 +2107,8 @@ void prt_map(void)
 
 			if (use_bigtile)
 			{
-				vx++;
-
-				/* Mega-Hack : Queue dummy char */
-				if (a & 0x80)
-					Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
-				else
-					Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+				map_pad(vx, vy, a);
+				vx += MAP_HM - 1;
 			}
 		}
 	}

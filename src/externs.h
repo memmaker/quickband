@@ -136,6 +136,7 @@ extern s32b turn;
 extern int use_graphics;
 extern s16b image_count;
 extern bool use_bigtile;
+extern int tile_mult;
 extern s16b signal_count;
 extern bool msg_flag;
 extern bool do_playtesting;

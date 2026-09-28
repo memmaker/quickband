@@ -96,6 +96,7 @@ bool do_feeling;			/* Hack -- Level feeling counter */
 
 int use_graphics;		/* The "graphics" mode is enabled */
 bool use_bigtile = FALSE;
+int tile_mult = 1;	/* web map zoom: a big tile is 2m x m cells */
 
 s16b image_count;  		/* Grids until next random image    */
                   		/* Optimizes the hallucination code */

@@ -113,13 +113,17 @@
  * Number of grids in each screen (vertically)
  * Must be a multiple of PANEL_HGT (at least 2x)
  */
-#define SCREEN_HGT	(Term->hgt - ROW_MAP - 1)
+#define SCREEN_HGT	((Term->hgt - ROW_MAP - 1) / MAP_VM)
 
 /*
  * Number of grids in each screen (horizontally)
  * Must be a multiple of PANEL_WID (at least 2x)
  */
-#define SCREEN_WID	((Term->wid - COL_MAP - 1) / (use_bigtile ? 2 : 1))
+#define SCREEN_WID	((Term->wid - COL_MAP - 1) / MAP_HM)
+
+/* Cells per grid on the main map: big tiles are 2 x 1, times the web map zoom */
+#define MAP_VM	(use_bigtile ? tile_mult : 1)
+#define MAP_HM	(use_bigtile ? 2 * tile_mult : 1)
 
 
 /*
@@ -1107,13 +1111,13 @@ enum
  * Convert a "key event" into a "location" (Y)
  */
 #define KEY_GRID_Y(K) \
-	((int) ((K.mousey - ROW_MAP) + Term->offset_y))
+	((int) (((K.mousey - ROW_MAP) / MAP_VM) + Term->offset_y))
 
 /*
  * Convert a "key event" into a "location" (X)
  */
 #define KEY_GRID_X(K) \
-	((int) (((K.mousex - COL_MAP) / (use_bigtile ? 2 : 1)) + Term->offset_x))
+	((int) (((K.mousex - COL_MAP) / MAP_HM) + Term->offset_x))
 
 
 /*

@@ -49,8 +49,8 @@ EM_JS(void, js_curs, (int t, int x, int y, int w), {
 });
 
 EM_JS(void, js_pict, (int t, int x, int y, int n, const byte *ap, const char *cp,
-                      const byte *tap, const char *tcp), {
-	Module.qb.pict(t, x, y, n, ap, cp, tap, tcp);
+                      const byte *tap, const char *tcp, int m), {
+	Module.qb.pict(t, x, y, n, ap, cp, tap, tcp, m);
 });
 
 EM_JS(void, js_fresh, (int t), {
@@ -74,6 +74,10 @@ EM_JS(void, js_color, (int i, int r, int g, int b), {
 });
 
 /* The page's Tiles choice: 1 tiles, 0 none (text) */
+EM_JS(int, js_tile_mult, (void), {
+	return Module.qb.tileMult();
+});
+
 EM_JS(int, js_tiles_wanted, (void), {
 	return Module.qb.tilesWanted();
 });
@@ -224,6 +228,14 @@ EMSCRIPTEN_KEEPALIVE void web_set_tiles(int on)
 	web_want_tiles = on ? 1 : 0;
 }
 
+/* Map zoom (A-/A+) in tile mode: a big tile is 2m x m cells (tile_mult) */
+static int web_want_mult = 0;
+
+EMSCRIPTEN_KEEPALIVE void web_set_tile_mult(int m)
+{
+	web_want_mult = m < 1 ? 1 : m > 4 ? 4 : m;
+}
+
 /* UT32 tiles in big-tile mode, or plain text */
 static void web_graphics(bool on)
 {
@@ -262,6 +274,12 @@ static int web_pump(void)
 			reset_visuals(TRUE);
 			do_cmd_redraw();
 		}
+	}
+	if (web_want_mult && inkey_flag && character_generated && !got)
+	{
+		tile_mult = web_want_mult;
+		web_want_mult = 0;
+		if (use_bigtile) do_cmd_redraw();
 	}
 
 	/* Safe autosave: only while waiting for a command */
@@ -381,7 +399,14 @@ static errr Term_text_web(int x, int y, int n, byte a, cptr s)
 static errr Term_pict_web(int x, int y, int n, const byte *ap, const char *cp,
                           const byte *tap, const char *tcp)
 {
-	js_pict(web_idx(), x, y, n, ap, cp, tap, tcp);
+	int m = 1;
+
+	/* A map grid (filler cells below it): drawn over 2m x m cells */
+	if (use_bigtile && (tile_mult > 1) && (y + 1 < Term->hgt) &&
+	    (Term->scr->a[y + 1][x] == 255) && (Term->scr->c[y + 1][x] == -1))
+		m = tile_mult;
+
+	js_pict(web_idx(), x, y, n, ap, cp, tap, tcp, m);
 	return (0);
 }
 
@@ -438,6 +463,7 @@ errr init_web(int argc, char **argv)
 	(void)argv;
 
 	/* UT32 tiles in big-tile mode, as in the X11 build (-g -b) */
+	tile_mult = js_tile_mult();
 	web_graphics(js_tiles_wanted() != 0);
 	ANGBAND_GRAF = "david";
 

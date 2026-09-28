@@ -22,7 +22,7 @@ emcc -O2 -fcommon -std=gnu99 -DUSE_WEB -Isrc \
 	-o "$OUT/quickband-core.js" \
 	-sASYNCIFY -sASYNCIFY_STACK_SIZE=65536 -sSTACK_SIZE=1048576 \
 	-sALLOW_MEMORY_GROWTH -sINITIAL_MEMORY=64MB \
-	-sEXPORTED_FUNCTIONS=_main,_web_request_save,_web_set_tiles \
+	-sEXPORTED_FUNCTIONS=_main,_web_request_save,_web_set_tiles,_web_set_tile_mult \
 	-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,HEAPU8,addRunDependency,removeRunDependency \
 	-sFORCE_FILESYSTEM -lidbfs.js -sENVIRONMENT=web \
 	--preload-file web/stage/lib@/quickband/lib

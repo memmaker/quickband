@@ -108,6 +108,7 @@
 					if (typeof s.split[k] === 'number' && s.split[k] > 0 && s.split[k] < 1) d.split[k] = s.split[k];
 				});
 				if (TILE_STEPS.indexOf(s.tile) >= 0) d.tile = s.tile;
+				if (s.mult >= 1 && s.mult <= 4) d.mult = s.mult;
 				d.tiles = s.tiles !== false;
 				d.autoSplit = s.autoSplit === true;
 				d.autoTile = s.autoTile === true;
@@ -192,7 +193,7 @@
 	function termShape(i) {
 		var box = inner(i), cw, ch, font, cols, rows;
 		if (!i) {
-			ch = L.tile; cw = L.tile / 2;
+			ch = tilesOn() ? Math.min(L.tile, defaultLayout().tile) : L.tile; cw = ch / 2;   /* tiles: cells fit 80x24, A+ zooms the grid */
 			font = Math.floor(Math.min(ch * 0.8, cw / 0.62));
 			/* text mode: cells from the map font, so wide fonts do not overlap */
 			if (!tilesReady || L.tiles === false) { cw = Math.ceil(measure(font, 0)); ch = Math.round(font * 1.3); }
@@ -277,7 +278,19 @@
 	}
 
 	/* Zoom: main window tile size, sub window font size */
+	function tilesOn() { return tilesReady && !!L && L.tiles !== false; }
 	function zoomMain(dir) {
+		if (tilesOn()) {   /* tile mode: bigger grids, same 80x24 text cells */
+			var m = clamp((L.mult || 1) + dir, 1, 4);
+			if (m === (L.mult || 1)) return;
+			L.mult = m;
+			if (Module._web_set_tile_mult) Module._web_set_tile_mult(m);
+			saveLayout();
+			app.status('Map tiles: ' + (m * terms[0].ch) + ' px');
+			clearTimeout(zoomMsgTimer);
+			zoomMsgTimer = setTimeout(function () { app.status(''); }, 1200);
+			return;
+		}
 		var i = TILE_STEPS.indexOf(L.tile);
 		var n = clamp(i + dir, 0, TILE_STEPS.length - 1);
 		if (n === i) return;
@@ -292,7 +305,8 @@
 	var zoomMsgTimer = 0;
 
 	function resetLayout() {
-		L = Object.assign(defaultLayout(), { tiles: L.tiles, audio: L.audio, wm: wm.state(), face: L.face, mapFace: L.mapFace });
+		L = Object.assign(defaultLayout(), { tiles: L.tiles, audio: L.audio, wm: wm.state(), face: L.face, mapFace: L.mapFace, mult: 1 });
+		if (Module._web_set_tile_mult) Module._web_set_tile_mult(1);
 		scheduleLayout();
 		saveLayout();
 	}
@@ -411,6 +425,7 @@
 		mouseX: 0, mouseY: 0, mouseB: 0,
 
 		/* Tiles button: asked by the game at startup */
+		tileMult: function () { return (L && L.mult) || 1; },
 		tilesWanted: function () { return (L && L.tiles === false) ? 0 : 1; },
 
 		termCols: function (t) { return terms[t].cols; },
@@ -447,19 +462,21 @@
 			var T = terms[t], c = T.ctx, H = Module.HEAPU8;
 			if (!t && !y) for (var j = 0; j < n; j++) row0[x + j] = String.fromCharCode(H[s + j] || 32);
 			c.fillStyle = '#000';
-			c.fillRect(x * T.cw, y * T.ch, n * T.cw, T.ch);
+			for (var i = 0; i < n; i++)   /* 255: filler cell of a big map tile, drawn with the tile */
+				if (H[s + i] !== 255) c.fillRect((x + i) * T.cw, y * T.ch, T.cw, T.ch);
 			c.fillStyle = color(a);
 			var cy = y * T.ch + T.ch / 2 + 1;
 			for (var i = 0; i < n; i++) {
 				var ch = H[s + i];
+				if (ch === 255) continue;
 				if (ch === 127) c.fillRect((x + i) * T.cw, y * T.ch, T.cw, T.ch);
 				else if (ch > 32 || XGLYPH[ch]) c.fillText(glyph(ch), (x + i) * T.cw + T.cw / 2, cy);
 			}
 		},
 
-		pict: function (t, x, y, n, ap, cp, tap, tcp) {
+		pict: function (t, x, y, n, ap, cp, tap, tcp, m) {
 			var T = terms[t], c = T.ctx, H = Module.HEAPU8;
-			var w = T.cw * 2, h = T.ch;
+			var h = T.ch;
 			var sw = tiles.naturalWidth, sh = tiles.naturalHeight;
 			for (var i = 0; i < n; i++) {
 				var a = H[ap + i], k = H[cp + i];
@@ -486,11 +503,12 @@
 				if (fx + TILE > sw || fy + TILE > sh) fx = fy = 0;
 				if (bx + TILE > sw || by + TILE > sh) bx = by = 0;
 
+				var w = 2 * (m || 1) * T.cw, th = (m || 1) * h;   /* big tile: 2m x m cells */
 				c.fillStyle = '#000';
-				c.fillRect(px, py, w, h);
+				c.fillRect(px, py, w, th);
 				if ((ta & 0x80) && (tk & 0x80) && (bx !== fx || by !== fy))
-					c.drawImage(tiles, bx, by, TILE, TILE, px, py, w, h);
-				c.drawImage(tiles, fx, fy, TILE, TILE, px, py, w, h);
+					c.drawImage(tiles, bx, by, TILE, TILE, px, py, w, th);
+				c.drawImage(tiles, fx, fy, TILE, TILE, px, py, w, th);
 			}
 		},
 

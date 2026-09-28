@@ -1166,7 +1166,7 @@ bool modify_panel(term *t, int wy, int wx)
 	int screen_wid = (t == Term) ? (t->wid - COL_MAP - 1) : t->wid;
 
 	/* Bigtile panels only have half the width */
-	if (use_bigtile) screen_wid = screen_wid / 2;
+	if (use_bigtile) screen_wid = screen_wid / MAP_HM, screen_hgt = screen_hgt / MAP_VM;
 
 	/* Verify wy, adjust if needed */
 	if (wy > dungeon_hgt - screen_hgt) wy = dungeon_hgt - screen_hgt;
@@ -1226,7 +1226,7 @@ bool change_panel(int dir)
 		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
 
 		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		if (use_bigtile) screen_wid = screen_wid / MAP_HM, screen_hgt = screen_hgt / MAP_VM;
 
 		/* Shift by half a panel */
 		wy = t->offset_y + ddy[dir] * screen_hgt / 2;
@@ -1291,7 +1291,7 @@ void verify_panel_int(bool centered)
 		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
 
 		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		if (use_bigtile) screen_wid = screen_wid / MAP_HM, screen_hgt = screen_hgt / MAP_VM;
 
 		panel_wid = screen_wid / 2;
 		panel_hgt = screen_hgt / 2;
