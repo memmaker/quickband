@@ -53,10 +53,6 @@ EM_JS(void, js_pict, (int t, int x, int y, int n, const byte *ap, const char *cp
 	Module.qb.pict(t, x, y, n, ap, cp, tap, tcp, m);
 });
 
-EM_JS(void, js_fresh, (int t), {
-	Module.qb.fresh(t);
-});
-
 EM_JS(void, js_bell, (void), {
 	Module.qb.bell();
 });
@@ -345,8 +341,6 @@ static errr Term_xtra_web(int n, int v)
 	{
 		case TERM_XTRA_NOISE: js_bell(); return (0);
 		case TERM_XTRA_FRESH:
-			js_fresh(web_idx());
-
 			/*
 			 * The page's Sound button is the only switch (off by default):
 			 * keep the savefile option on so events reach it
@@ -363,7 +357,6 @@ static errr Term_xtra_web(int n, int v)
 			return (0);
 		case TERM_XTRA_CLEAR: js_clear(web_idx()); return (0);
 		case TERM_XTRA_DELAY:
-			js_fresh(web_idx());
 			if (v > 0) web_yield(v);
 			return (0);
 		case TERM_XTRA_REACT: web_react(); return (0);
