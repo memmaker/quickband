@@ -38,7 +38,6 @@
 		flush: function (done) { if (Module._web_request_save) Module._web_request_save(); setTimeout(done, 1500); },
 	});
 
-	var row0 = [];   /* the main term's message row (row 0), for RvipWM.prompt */
 
 	/* ---------- tiling window layout ---------- */
 
@@ -445,7 +444,6 @@
 		},
 
 		clear: function (t) {
-			if (!t) row0 = [];
 			var T = terms[t];
 			T.ctx.fillStyle = '#000';
 			T.ctx.fillRect(0, 0, T.cols * T.cw, T.rows * T.ch);
@@ -453,14 +451,12 @@
 
 		wipe: function (t, x, y, n) {
 			var T = terms[t];
-			if (!t && !y) for (var j = 0; j < n; j++) row0[x + j] = ' ';
 			T.ctx.fillStyle = '#000';
 			T.ctx.fillRect(x * T.cw, y * T.ch, n * T.cw, T.ch);
 		},
 
 		text: function (t, x, y, n, a, s) {
 			var T = terms[t], c = T.ctx, H = Module.HEAPU8;
-			if (!t && !y) for (var j = 0; j < n; j++) row0[x + j] = String.fromCharCode(H[s + j] || 32);
 			c.fillStyle = '#000';
 			for (var i = 0; i < n; i++)   /* 255: filler cell of a big map tile, drawn with the tile */
 				if (H[s + i] !== 255) c.fillRect((x + i) * T.cw, y * T.ch, T.cw, T.ch);
@@ -518,8 +514,6 @@
 			c.lineWidth = 1;
 			c.strokeRect(x * T.cw + 0.5, y * T.ch + 0.5, w * T.cw - 1, T.ch - 1);
 		},
-
-		fresh: function (t) { if (!t) RvipWM.prompt.text(row0.join('')); },   /* the message line over the map */
 
 		bell: function () { },
 

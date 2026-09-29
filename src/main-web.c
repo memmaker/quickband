@@ -384,6 +384,60 @@ static errr Term_bigcurs_web(int x, int y)
 	return (0);
 }
 
+static int tile_rows_at(int x, int y)
+{
+	/* A map grid (filler cells below it): drawn over 2m x m cells */
+	if (use_bigtile && (tile_mult > 1) && (y + 1 < Term->hgt) &&
+	    (Term->scr->a[y + 1][x] == 255) && (Term->scr->c[y + 1][x] == -1))
+		return tile_mult;
+	return 1;
+}
+
+/*
+ * Filler cells of a big map tile draw nothing, so when a menu that covered
+ * part of a tile goes away, the tile must be redrawn from its anchor cell,
+ * then any non-filler cells it covers repainted on top.
+ */
+static void redraw_tiles(int x, int y, int n)
+{
+	int i, hm = MAP_HM, vm = MAP_VM, lastx = -1;
+	term_win *w = Term->scr;
+
+	if (web_idx() || !use_bigtile || (y < ROW_MAP) || (x + n <= COL_MAP)) return;
+
+	for (i = 0; i < n; i++)
+	{
+		int cx = x + i, ax, ay, xx, yy;
+		if (cx < COL_MAP) continue;
+		if ((byte)w->a[y][cx] != 255 || (byte)w->c[y][cx] != 255) continue;
+
+		ax = COL_MAP + ((cx - COL_MAP) / hm) * hm;
+		ay = ROW_MAP + ((y - ROW_MAP) / vm) * vm;
+		if (ax == lastx) continue;
+		lastx = ax;
+		if ((ax + hm > Term->wid) || (ay + vm > Term->hgt)) continue;
+
+		/* Anchor must be a real tile */
+		if (!(w->a[ay][ax] & 0x80) || !(w->c[ay][ax] & 0x80) ||
+		    (((byte)w->a[ay][ax] == 255) && ((byte)w->c[ay][ax] == 255))) continue;
+
+		js_pict(0, ax, ay, 1, &w->a[ay][ax], &w->c[ay][ax], &w->ta[ay][ax],
+		        &w->tc[ay][ax], tile_rows_at(ax, ay));
+
+		/* Text (e.g. part of a menu) still over the tile */
+		for (yy = ay; yy < ay + vm; yy++)
+			for (xx = ax; xx < ax + hm; xx++)
+			{
+				byte a = w->a[yy][xx]; char c = w->c[yy][xx];
+				if ((yy == ay) && (xx == ax)) continue;
+				if ((a == 255) && ((byte)c == 255)) continue;
+				if ((a & 0x80) && (c & 0x80))
+					js_pict(0, xx, yy, 1, &w->a[yy][xx], &w->c[yy][xx], &w->ta[yy][xx], &w->tc[yy][xx], tile_rows_at(xx, yy));
+				else js_text(0, xx, yy, 1, a, &w->c[yy][xx]);
+			}
+	}
+}
+
 static errr Term_wipe_web(int x, int y, int n)
 {
 	js_wipe(web_idx(), x, y, n);
@@ -399,14 +453,8 @@ static errr Term_text_web(int x, int y, int n, byte a, cptr s)
 static errr Term_pict_web(int x, int y, int n, const byte *ap, const char *cp,
                           const byte *tap, const char *tcp)
 {
-	int m = 1;
-
-	/* A map grid (filler cells below it): drawn over 2m x m cells */
-	if (use_bigtile && (tile_mult > 1) && (y + 1 < Term->hgt) &&
-	    (Term->scr->a[y + 1][x] == 255) && (Term->scr->c[y + 1][x] == -1))
-		m = tile_mult;
-
-	js_pict(web_idx(), x, y, n, ap, cp, tap, tcp, m);
+	js_pict(web_idx(), x, y, n, ap, cp, tap, tcp, tile_rows_at(x, y));
+	redraw_tiles(x, y, n);
 	return (0);
 }
 

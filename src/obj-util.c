@@ -4940,9 +4940,8 @@ void display_itemlist(void)
 		for (i = 0; i < num; i++)
 		{
 			object_type *o_ptr = &o_list[floor_list[i]];
-			/* Skip gold/squelched */
-			if ((o_ptr->tval == TV_GOLD) ||
-				((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware)))
+			/* Skip squelched */
+			if ((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware))
 				continue;
 
 			standing_types[standing_counter] = o_ptr;
@@ -4968,9 +4967,8 @@ void display_itemlist(void)
 				object_type *o_ptr = &o_list[floor_list[i]];
 				unsigned j;
 
-				/* Skip gold/squelched */
-				if ((o_ptr->tval == TV_GOLD) ||
-					((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware)))
+				/* Skip squelched */
+				if ((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware))
 					continue;
 
 				/* See if we've already seen a similar item; if so, just add */
@@ -5051,9 +5049,8 @@ void display_itemlist(void)
 
 		object_type *o_ptr = standing_types[i];
 
-		/* We shouldn't list coins or squelched items */
-		if ((o_ptr->tval == TV_GOLD) ||
-			((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware)))
+		/* We shouldn't list squelched items */
+		if ((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware))
 						continue;
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 		if (standing_counts[i] > 1)
@@ -5152,9 +5149,8 @@ void display_itemlist(void)
 
 		object_type *o_ptr = types[i];
 
-		/* We shouldn't list coins or squelched items */
-		if ((o_ptr->tval == TV_GOLD) ||
-			((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware)))
+		/* We shouldn't list squelched items */
+		if ((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) && (k_info[o_ptr->k_idx].aware))
 					continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
